@@ -307,10 +307,46 @@ const VIEWS = {
         <tr><th>Caption must include</th><td>${(c.caption_must_include || []).map(esc).join(" · ")}</td></tr>
         <tr><th>Budget left</th><td>${snap ? money(snap.remaining_budget_usd) + ", seen " + when(snap.at) : "no snapshot"}</td></tr>
         <tr><th>Terms last checked</th><td>${when(c.terms_checked_at)} <span class="mute">Check the live page before relying on these.</span></td></tr>
-        <tr><th>Authorized channels</th><td>${S.channels.filter(ch => ch.campaign_id === c.id).map(ch => esc(ch.platform + "/" + ch.slug)).join(", ") || "none"}</td></tr>
       </table></div>
-      <p><a class="b ghost" href="${safeUrl(c.campaign_url)}" target="_blank" rel="noopener">Campaign page</a> <a class="b ghost" href="${safeUrl(c.brief_url)}" target="_blank" rel="noopener">Brief</a></p></div>`;
-    }).join("");
+      <p><a class="b ghost" href="${safeUrl(c.campaign_url)}" target="_blank" rel="noopener">Campaign page</a> <a class="b ghost" href="${safeUrl(c.brief_url)}" target="_blank" rel="noopener">Brief</a></p>
+      <h2>Streamers you may clip for this campaign</h2>
+      <div class="tablewrap"><table><tr><th>Streamer</th><th>Why it is allowed</th><th>Footage from</th><th></th></tr>
+      ${S.channels.filter(ch => ch.campaign_id === c.id).map(ch => `<tr><td><b>${esc(ch.slug)}</b> <span class="tag">${esc(ch.platform)}</span></td>
+        <td class="small">${esc(ch.permission_basis)}</td><td class="small">${esc(ch.footage_from || "any date")}</td>
+        <td><button class="b ghost" data-act="removeChannel" data-id="${ch.id}" data-slug="${esc(ch.slug)}">Remove</button></td></tr>`).join("") || `<tr><td colspan="4" class="mute">No streamers yet.</td></tr>`}
+      </table></div>
+      <div class="row" style="margin-top:10px">
+        <div style="width:120px"><label>Platform</label><select data-ch-platform="${c.id}"><option>kick</option><option>twitch</option><option>youtube</option></select></div>
+        <div class="grow"><label>Channel name or link</label><input data-ch-slug="${c.id}" placeholder="e.g. dasgasd3m"></div>
+        <div style="width:170px"><label>Footage from (optional)</label><input type="date" data-ch-from="${c.id}"></div>
+      </div>
+      <label>Where does this campaign say you may clip this streamer?</label>
+      <input data-ch-basis="${c.id}" placeholder="Quote or link from the campaign brief">
+      <p><button class="b" data-act="addChannel" data-campaign="${c.id}" ${me.kind !== "human" ? "disabled" : ""}>Add streamer</button></p>
+      <p class="small mute">A streamer belongs to a campaign because the campaign is what gives permission to use their footage. Clips from streamers not listed here are refused.</p></div>`;
+    }).join("") + `
+    <details class="card"><summary style="cursor:pointer;font-weight:700">Add a campaign</summary>
+      <p class="small mute">Copy the terms from the live campaign page, not from memory.</p>
+      <div class="grid">
+        <div><label>Name</label><input id="cName" placeholder="Organizer · Streamer or game"></div>
+        <div><label>Organizer</label><input id="cOrg"></div>
+        <div><label>Campaign page link</label><input id="cUrl" placeholder="https://…"></div>
+        <div><label>Brief link</label><input id="cBrief" placeholder="https://…"></div>
+        <div><label>Pays per 1,000 eligible views ($)</label><input id="cRate" type="number" step="0.01" min="0"></div>
+        <div><label>Minimum eligible views</label><input id="cMin" type="number" min="0" value="0"></div>
+        <div><label>Cap per post ($, blank if none)</label><input id="cCap" type="number" step="0.01" min="0"></div>
+        <div><label>Platform fee (%)</label><input id="cFee" type="number" step="0.1" min="0" max="100" value="0"></div>
+        <div><label>Minutes to submit after publishing (blank if none)</label><input id="cWin" type="number" min="1"></div>
+        <div><label>Closes (your local time)</label><input id="cClose" type="datetime-local"></div>
+      </div>
+      <label>Platforms</label>
+      <div class="small"><label style="display:inline;margin-right:14px"><input type="checkbox" id="cYt" checked style="width:auto"> YouTube Shorts</label>
+        <label style="display:inline"><input type="checkbox" id="cTt" checked style="width:auto"> TikTok</label></div>
+      <label>Text every caption must include, separated by commas</label><input id="cMust" placeholder="Sponsored, streamername, kick.com/streamername, #hashtag">
+      <label>Caption template ({hook} is replaced by the clip's line)</label><input id="cTpl" placeholder="Sponsored by X. {hook} Watch Y on Kick: kick.com/y #tag">
+      <label>On-screen disclosure at the start of the video (blank if not required)</label><input id="cDisc" placeholder="Sponsored by X">
+      <p><button class="b" data-act="addCampaign" ${me.kind !== "human" ? "disabled" : ""}>Add campaign</button></p>
+    </details>`;
   },
 
   earnings() {
@@ -374,6 +410,38 @@ const ACTIONS = {
   async release(d) { await call(db.rpc("release_job", {p_id: d.id}), "Back in the queue"); },
   async addJob() { const title = $("#jobTitle").value.trim(); if (title) await call(db.from("jobs").insert({title, kind: $("#jobKind").value}), "Added"); },
   async toggleAgent(d) { await call(db.from("agents").update({enabled: d.on === "1"}).eq("name", d.name), d.name + (d.on === "1" ? " on" : " off")); },
+  async addChannel(d) {
+    const q = k => $(`[data-ch-${k}="${CSS.escape(d.campaign)}"]`).value.trim();
+    const slug = q("slug").replace(/^https?:\/\/(www\.)?[a-z.]+\//i, "").replace(/^@/, "").split(/[\/?#]/)[0].toLowerCase();
+    const basis = q("basis");
+    if (!/^[a-z0-9_.-]{2,60}$/.test(slug)) return toast("Enter the streamer's channel name, e.g. dasgasd3m", true);
+    if (basis.length < 10) return toast("Say where the campaign allows clipping this streamer: a quote or a link from the brief", true);
+    await call(db.from("channels").upsert({campaign_id: d.campaign, platform: q("platform"), slug, permission_basis: basis,
+      footage_from: q("from") || null, active: true}, {onConflict: "campaign_id,platform,slug"}), "Added " + slug);
+  },
+  async removeChannel(d) {
+    if (confirm("Stop accepting clips from " + d.slug + "? Existing clips are kept."))
+      await call(db.from("channels").update({active: false}).eq("id", d.id), "Removed " + d.slug);
+  },
+  async addCampaign() {
+    const v = id => $("#" + id).value.trim(), n = id => v(id) === "" ? null : Number(v(id));
+    const name = v("cName"), rate = n("cRate");
+    if (name.length < 3) return toast("Give the campaign a name", true);
+    if (rate == null || !(rate >= 0)) return toast("Enter what the campaign pays per 1,000 eligible views", true);
+    for (const id of ["cUrl", "cBrief"]) if (v(id) && !/^https:\/\//.test(v(id))) return toast("Links must start with https://", true);
+    const platforms = [$("#cYt").checked && "youtube", $("#cTt").checked && "tiktok"].filter(Boolean);
+    if (!platforms.length) return toast("Pick at least one platform", true);
+    const slug = name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const row = {slug, name, organizer: v("cOrg") || null, campaign_url: v("cUrl") || null, brief_url: v("cBrief") || null,
+      rate_usd_per_1000: rate, min_eligible_views: n("cMin") ?? 0, cap_gross_usd: n("cCap"), fee_pct: n("cFee") ?? 0,
+      submit_window_minutes: n("cWin"), closes_at: v("cClose") ? new Date(v("cClose")).toISOString() : null, platforms,
+      caption_must_include: v("cMust").split(",").map(x => x.trim()).filter(Boolean),
+      caption_template: v("cTpl") || null, video_disclosure: v("cDisc") || null,
+      terms_checked_at: new Date().toISOString(), terms_evidence: v("cUrl") || "entered on the dashboard"};
+    const {error} = await db.from("campaigns").insert(row);
+    if (error) return toast(error.message.includes("campaigns_slug_key") ? "A campaign with that name already exists" : error.message, true);
+    toast("Campaign added. Now add the streamers it lets you clip."); await load();
+  },
   async addSource() {
     const url = $("#srcUrl").value.trim(), ch = S.channels.find(c => c.id === $("#srcChannel").value);
     if (!/^https:\/\//.test(url) || !ch) return toast("Paste an https:// clip link", true);

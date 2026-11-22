@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Leonida Uncut</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--bg:#0d1f24;--panel:#15303a;--panel2:#1b3b46;--line:#335560;--text:#f1f4ec;--mute:#a9c1bd;
+  --teal:#7fe0d2;--gold:#ffd58a;--red:#ff7b6b;--green:#8fe39a;--radius:12px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,"Segoe UI",system-ui,sans-serif}
+a{color:var(--teal)}
+header{position:sticky;top:0;z-index:5;background:#0d1f24f2;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar{max-width:1100px;margin:auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.08em;font-size:13px;color:var(--gold)}
+.who{margin-left:auto;color:var(--mute);font-size:13px;display:flex;gap:10px;align-items:center}
+nav{max-width:1100px;margin:auto;padding:0 10px;display:flex;gap:2px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);padding:10px 12px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--text);border-color:var(--teal)}
+nav .n{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--panel2);font-size:12px;text-align:center}
+nav .n.hot{background:var(--red);color:#1a0b08}
+main{max-width:1100px;margin:auto;padding:18px 16px 60px}
+h1{font-size:26px;letter-spacing:-.02em;margin:6px 0 14px}
+h2{font-size:17px;margin:22px 0 10px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat b{display:block;font-size:26px;line-height:1.2}
+.stat span{color:var(--mute);font-size:13px}
+.stat.alarm{border-color:var(--red)} .stat.alarm b{color:var(--red)}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.grow{flex:1;min-width:240px}
+video{width:230px;max-width:100%;border-radius:10px;background:#000;aspect-ratio:9/16}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:700;background:var(--panel2);color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.tag.ok{background:#1f4a35;color:var(--green)} .tag.warn{background:#4a3f1f;color:var(--gold)} .tag.bad{background:#4a2520;color:var(--red)}
+.mute{color:var(--mute)} .small{font-size:13px} .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;overflow-wrap:anywhere}
+button.b,a.b{display:inline-block;background:var(--teal);color:#06231f;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
+button.b.ghost,a.b.ghost{background:none;color:var(--teal);border:1px solid var(--line)}
+button.b.danger{background:var(--red);color:#1a0b08}
+button.b:disabled{opacity:.45;cursor:not-allowed}
+input,textarea,select{width:100%;background:#0b1a1e;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit}
+textarea{min-height:76px;resize:vertical}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600;font-size:12.5px}
+.tablewrap{overflow-x:auto}
+.count{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--red);line-height:1}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{counter-increment:s;padding:10px 0 10px 40px;position:relative;border-top:1px solid var(--line)}
+.steps li:before{content:counter(s);position:absolute;left:0;top:10px;width:26px;height:26px;border-radius:50%;background:var(--panel2);text-align:center;font-weight:700}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#06231f;border:1px solid var(--teal);color:var(--text);padding:10px 16px;border-radius:10px;max-width:92vw;display:none;z-index:9}
+#toast.err{border-color:var(--red)}
+.login{max-width:380px;margin:9vh auto;padding:0 16px}
+.hide{display:none}
+.switch{min-width:64px}
+</style>
+</head>
+<body>
+<div id="login" class="login hide">
+  <div class="brand">LEONIDA UNCUT</div>
+  <h1>Sign in</h1>
+  <form id="loginForm" class="card">
+    <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
+    <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required>
+    <p><button class="b" type="submit">Sign in</button> <button class="b ghost" type="button" id="signup">First time: create my login</button></p>
+    <p id="loginMsg" class="small mute"></p>
+    <p class="small mute">Only invited partner emails get access. Choose your own password; nobody else sees it.</p>
+  </form>
+</div>
+
+<div id="setup" class="login hide">
+  <div class="brand">LEONIDA UNCUT</div>
+  <h1>Not connected yet</h1>
+  <p class="card">This dashboard has no database address. <code>dashboard/config.js</code> needs the Supabase project URL and publishable key.</p>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <div class="bar"><span class="brand">LEONIDA UNCUT</span><span id="fresh" class="small mute"></span>
+      <span class="who"><span id="whoami"></span><button class="b ghost" id="refresh">Refresh</button><button class="b ghost" id="signout">Sign out</button></span></div>
+    <nav id="nav"></nav>
+  </header>
+  <main id="view"></main>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const cfg = window.LEONIDA || {};
+const $ = (s, el = document) => el.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl = u => /^https:\/\//i.test(u || "") ? esc(u) : "#";
+const money = v => v == null ? "—" : "$" + Number(v).toFixed(2);
+const num = v => v == null ? "—" : Number(v).toLocaleString();
+const when = t => t ? new Date(t).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"}) : "—";
+const TABS = [["overview", "Overview"], ["review", "Review"], ["launch", "Launch"], ["queue", "Queue"],
+              ["agents", "Agents"], ["campaigns", "Campaigns"], ["earnings", "Earnings"], ["history", "History"]];
+const UPLOAD = {youtube: "https://studio.youtube.com/", tiktok: "https://www.tiktok.com/tiktokstudio/upload"};
+let db, me = null, tab = "overview", S = {posts: [], jobs: [], agents: [], campaigns: [], snaps: [], events: [], partners: [], channels: []};
+const videoUrls = {};
+
+function toast(msg, isErr) {
+  const t = $("#toast"); t.textContent = msg; t.className = isErr ? "err" : ""; t.style.display = "block";
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = "none", isErr ? 9000 : 3500);
+}
+async function call(promise, okMsg) {
+  const {data, error} = await promise;
+  if (error) { toast(error.message || String(error), true); return null; }
+  if (okMsg) toast(okMsg);
+  await load();
+  return data ?? true;
+}
+
+async function start() {
+  if (!cfg.url || !cfg.key) { $("#setup").classList.remove("hide"); return; }
+  db = window.supabase.createClient(cfg.url, cfg.key);
+  const {data} = await db.auth.getSession();
+  db.auth.onAuthStateChange((_e, session) => { if (!session) showLogin(); });
+  data.session ? enter(data.session) : showLogin();
+}
+function showLogin() { $("#app").classList.add("hide"); $("#login").classList.remove("hide"); }
+async function enter(session) {
+  const {data: rows, error} = await db.from("partners").select("id,display_name,kind").eq("id", session.user.id);
+  if (error || !rows.length) {
+    showLogin();
+    $("#loginMsg").textContent = "Signed in, but this account is not a partner yet. The project owner adds partners in the database.";
+    return;
+  }
+  me = rows[0];
+  $("#login").classList.add("hide"); $("#app").classList.remove("hide");
+  $("#whoami").textContent = me.display_name;
+  await load();
+  setInterval(() => { if (document.visibilityState === "visible" && !document.activeElement.matches("input,textarea,select")) load(); }, 20000);
+  setInterval(tick, 1000);
+}
+
+async function load() {
+  const q = [
+    db.from("post_status").select("*").order("updated_at", {ascending: false}),
+    db.from("jobs").select("*").in("state", ["queued", "claimed"]).order("priority", {ascending: false}).order("created_at"),
+    db.from("agents").select("*").order("name"),
+    db.from("campaigns").select("*").order("created_at"),
+    db.from("campaign_snapshots").select("*").order("at", {ascending: false}).limit(20),
+    db.from("events").select("id,at,actor,entity,action,after,before").order("id", {ascending: false}).limit(60),
+    db.from("partners").select("id,display_name,kind"),
+    db.from("channels").select("*").eq("active", true),
+  ];
+  const r = await Promise.all(q);
+  const bad = r.find(x => x.error);
+  if (bad) { toast(bad.error.message, true); return; }
+  [S.posts, S.jobs, S.agents, S.campaigns, S.snaps, S.events, S.partners, S.channels] = r.map(x => x.data);
+  $("#fresh").textContent = "Updated " + new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+  render();
+}
+
+const live = p => p.state === "published" && !p.submission_id && !p.window_missed;
+const groups = () => ({
+  review: S.posts.filter(p => ["draft", "in_review"].includes(p.state)),
+  ready: S.posts.filter(p => p.state === "approved"),
+  submitNow: S.posts.filter(live),
+  missed: S.posts.filter(p => p.window_missed),
+  submitted: S.posts.filter(p => ["submitted", "accepted"].includes(p.state)),
+});
+const name = id => (S.partners.find(p => p.id === id) || {}).display_name || (id ? "someone" : "system");
+
+function render() {
+  const g = groups();
+  const counts = {review: g.review.length, launch: g.ready.length + g.submitNow.length, queue: S.jobs.length};
+  $("#nav").innerHTML = TABS.map(([id, label]) =>
+    `<button data-tab="${id}" class="${id === tab ? "on" : ""}">${label}${counts[id] ? `<span class="n ${id === "launch" && g.submitNow.length ? "hot" : ""}">${counts[id]}</span>` : ""}</button>`).join("");
+  $("#view").innerHTML = VIEWS[tab](g);
+  if (tab === "review") loadVideos();
+  tick();
+}
+
+function countdown(deadline) {
+  const s = Math.floor((new Date(deadline) - Date.now()) / 1000);
+  if (s <= 0) return "0:00";
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+function tick() { document.querySelectorAll("[data-deadline]").forEach(el => el.textContent = countdown(el.dataset.deadline)); }
+
+const VIEWS = {
+  overview(g) {
+    const sum = k => S.posts.reduce((a, p) => a + Number(p[k] || 0), 0);
+    const cam = S.campaigns.find(c => c.status === "active");
+    const snap = cam && S.snaps.find(s => s.campaign_id === cam.id);
+    const days = cam && cam.closes_at ? Math.max(0, Math.ceil((new Date(cam.closes_at) - Date.now()) / 864e5)) : null;
+    return `<h1>Overview</h1>
+    ${g.submitNow.length ? `<div class="card stat alarm" style="margin-bottom:12px"><b>Submit now: ${g.submitNow.map(p => esc(p.slug)).join(", ")}</b><span>A published post is waiting for its campaign submission. Open the Launch tab.</span></div>` : ""}
+    <div class="grid">
+      <div class="card stat"><b>${g.review.length}</b><span>waiting for review</span></div>
+      <div class="card stat"><b>${g.ready.length}</b><span>approved, ready to publish</span></div>
+      <div class="card stat ${g.submitNow.length ? "alarm" : ""}"><b>${g.submitNow.length}</b><span>published, not yet submitted</span></div>
+      <div class="card stat"><b>${g.submitted.length}</b><span>submitted to a campaign</span></div>
+      <div class="card stat"><b>${g.missed.length}</b><span>missed the submission window</span></div>
+      <div class="card stat"><b>${S.jobs.length}</b><span>open jobs in the queue</span></div>
+    </div>
+    <h2>Money</h2>
+    <div class="grid">
+      <div class="card stat"><b>${money(sum("est_after_fee_usd"))}</b><span>estimate after fee, from campaign-reported eligible views only</span></div>
+      <div class="card stat"><b>${money(sum("approved_usd"))}</b><span>approved by campaigns</span></div>
+      <div class="card stat"><b>${money(sum("paid_usd"))}</b><span>cash received</span></div>
+      <div class="card stat"><b>${money(sum("cost_usd"))}</b><span>production cost</span></div>
+    </div>
+    ${cam ? `<h2>${esc(cam.name)}</h2><div class="grid">
+      <div class="card stat"><b>${snap ? money(snap.remaining_budget_usd) : "—"}</b><span>campaign budget left${snap ? ", seen " + when(snap.at) : ""}</span></div>
+      <div class="card stat"><b>${days ?? "—"}</b><span>days until the campaign closes</span></div>
+      <div class="card stat"><b>$${Number(cam.rate_usd_per_1000)}</b><span>per 1,000 eligible views, ${num(cam.min_eligible_views)} minimum, $${Number(cam.cap_gross_usd)} cap</span></div>
+      <div class="card stat"><b>${cam.submit_window_minutes} min</b><span>to submit after publishing</span></div></div>` : ""}`;
+  },
+
+  review(g) {
+    const list = [...g.review, ...g.ready];
+    if (!list.length) return `<h1>Review</h1><p class="card mute">Nothing is waiting. Clips appear here when the Editor agent finishes one.</p>${addSource()}`;
+    return `<h1>Review</h1>` + list.map(p => `
+      <div class="card" style="margin-bottom:12px"><div class="row">
+        <div><video controls playsinline preload="metadata" data-media="${esc(p.media_path || "")}"></video>
+          <div class="small mute" data-medianote></div></div>
+        <div class="grow">
+          <div><span class="tag ${p.state === "approved" ? "ok" : "warn"}">${esc(p.state.replace("_", " "))}</span>
+            <b>${esc(p.platform)}</b> · ${esc(p.account || "no account")} · <span class="mono">${esc(p.slug)}</span></div>
+          <div class="small mute">${esc(p.campaign_name)} · ${p.duration_seconds ? Number(p.duration_seconds).toFixed(1) + "s" : ""} · approvals ${p.approvals} of ${p.approvals_required}</div>
+          <label>Caption</label><textarea data-caption="${esc(p.clip)}" ${p.state === "approved" ? "readonly" : ""}>${esc(p.caption)}</textarea>
+          ${(p.caption_missing || []).length ? `<p class="small" style="color:var(--red)">Caption is missing: ${p.caption_missing.map(esc).join(", ")}</p>` : ""}
+          <p class="small mute">Watch the whole clip and check the captions against what is said before approving. The transcript is machine-made.</p>
+          ${p.state === "approved" ? `<p class="small">Approved. Publish it from the Launch tab.</p>` : `
+          <button class="b ghost" data-act="saveCaption" data-clip="${esc(p.clip)}">Save caption</button>
+          <button class="b" data-act="approve" data-slug="${esc(p.slug)}" ${me.kind !== "human" ? "disabled" : ""}>Approve this file</button>
+          <button class="b ghost" data-act="revise" data-slug="${esc(p.slug)}">Send back</button>`}
+        </div></div></div>`).join("") + addSource();
+  },
+
+  launch(g) {
+    const busy = g.submitNow[0];
+    let html = `<h1>Launch</h1><p class="small mute">One platform at a time: publish, submit to the campaign, record the receipt, then the next. You click publish and submit yourself, in the official screens.</p>`;
+    html += g.submitNow.map(p => {
+      const cam = S.campaigns.find(c => c.slug === p.campaign) || {};
+      return `<div class="card" style="border-color:var(--red);margin-bottom:12px">
+        <div class="row"><div><div class="small mute">Time left to submit</div><div class="count" data-deadline="${esc(p.submit_deadline)}"></div></div>
+        <div class="grow"><b>${esc(p.platform)} · ${esc(p.slug)}</b>
+          <div class="small">Published ${when(p.published_at)} · <a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">public post</a></div>
+          <ol class="steps">
+            <li><button class="b ghost" data-act="copy" data-text="${esc(p.published_url)}">Copy post link</button></li>
+            <li><a class="b" href="${safeUrl(cam.campaign_url)}" target="_blank" rel="noopener">Open campaign submission page</a></li>
+            <li><label>Receipt or submission ID shown after you submit</label><input data-receipt="${esc(p.slug)}" placeholder="Paste the receipt">
+              <p><button class="b" data-act="submitted" data-slug="${esc(p.slug)}">Record receipt</button></p></li>
+          </ol></div></div></div>`;
+    }).join("");
+    html += g.ready.map(p => `<div class="card" style="margin-bottom:12px">
+        <b>${esc(p.platform)} · ${esc(p.account || "")} · <span class="mono">${esc(p.slug)}</span></b>
+        ${busy ? `<p class="small" style="color:var(--gold)">Submit ${esc(busy.slug)} first. Publishing this now would start a second 30-minute clock.</p>` : ""}
+        <ol class="steps">
+          <li><button class="b ghost" data-act="copy" data-text="${esc(p.caption)}">Copy caption</button>
+              ${p.platform_title ? `<button class="b ghost" data-act="copy" data-text="${esc(p.platform_title)}">Copy title</button>` : ""}
+              <div class="small mute">${esc(p.caption)}</div></li>
+          <li>Have the campaign submission page open in another tab before you publish.</li>
+          <li><a class="b ghost" href="${UPLOAD[p.platform] || "#"}" target="_blank" rel="noopener">Open ${esc(p.platform)} upload</a>
+              <span class="small mute">Upload the approved file and turn on the paid-promotion disclosure.</span></li>
+          <li><label>Public link of the post, once it is live</label><input data-puburl="${esc(p.slug)}" placeholder="https://…">
+              <p><button class="b" data-act="published" data-slug="${esc(p.slug)}" ${busy || me.kind !== "human" ? "disabled" : ""}>It is public now: start the clock</button></p></li>
+        </ol></div>`).join("");
+    if (!g.submitNow.length && !g.ready.length) html += `<p class="card mute">Nothing is approved for publishing.</p>`;
+    if (g.missed.length) html += `<h2>Missed window</h2>` + g.missed.map(p => `<div class="card small" style="margin-bottom:8px"><b>${esc(p.slug)}</b> was published ${when(p.published_at)} and never submitted. Window closed ${when(p.submit_deadline)}. Not eligible without the organizer's written exception.</div>`).join("");
+    return html;
+  },
+
+  queue() {
+    return `<h1>Queue</h1><p><button class="b" data-act="claim">Take the next job</button></p>
+    <div class="card tablewrap"><table><tr><th>Job</th><th>Kind</th><th>Due</th><th>Who</th><th></th></tr>
+    ${S.jobs.map(j => `<tr><td>${esc(j.title)}${j.payload && j.payload.note ? `<div class="small mute">${esc(j.payload.note)}</div>` : ""}</td>
+      <td><span class="tag">${esc(j.kind)}</span></td><td class="small">${when(j.due_at)}</td>
+      <td class="small">${j.state === "claimed" ? esc(j.claimed_agent || name(j.claimed_by)) + " until " + when(j.lease_expires_at) : "open"}</td>
+      <td>${j.state === "claimed" && j.claimed_by === me.id ? `<button class="b" data-act="done" data-id="${j.id}">Done</button> <button class="b ghost" data-act="release" data-id="${j.id}">Release</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="5" class="mute">Queue is empty.</td></tr>`}
+    </table></div>
+    <h2>Add a job</h2><div class="card"><div class="row"><div class="grow"><input id="jobTitle" placeholder="What needs doing"></div>
+      <div><select id="jobKind"><option>other</option><option>review</option><option>metrics</option><option>render</option></select></div>
+      <div><button class="b" data-act="addJob">Add</button></div></div></div>`;
+  },
+
+  agents() {
+    return `<h1>Agents</h1><p class="small mute">Agents run on a partner's own machine. They prepare clips and record public view counts. They cannot approve, publish or submit.</p>` +
+    S.agents.map(a => {
+      const seen = a.last_seen_at ? (Date.now() - new Date(a.last_seen_at)) / 60000 : null;
+      const health = !a.enabled ? ["off", ""] : seen == null ? ["never run", "warn"] : seen < 30 ? ["running", "ok"] : ["not seen for " + Math.round(seen / 60) + "h", "warn"];
+      return `<div class="card" style="margin-bottom:12px"><div class="row"><div class="grow">
+        <b style="font-size:17px;text-transform:capitalize">${esc(a.name)}</b> <span class="tag ${health[1]}">${esc(health[0])}</span>
+        <div class="small">${esc(a.description)}</div>
+        <div class="small mute">${a.last_seen_at ? "Last seen " + when(a.last_seen_at) + " on " + esc(a.last_host) + " · " + esc(a.last_status) : "Has not run yet"}</div>
+        ${a.last_error ? `<div class="small" style="color:var(--gold)">Last note: ${esc(a.last_error)}</div>` : ""}</div>
+        <div><button class="b ${a.enabled ? "ghost" : ""} switch" data-act="toggleAgent" data-name="${esc(a.name)}" data-on="${a.enabled ? 0 : 1}">${a.enabled ? "Turn off" : "Turn on"}</button></div></div></div>`;
+    }).join("") + addSource();
+  },
+
+  campaigns() {
+    return `<h1>Campaigns</h1>` + S.campaigns.map(c => {
+      const snap = S.snaps.find(s => s.campaign_id === c.id);
+      return `<div class="card" style="margin-bottom:12px"><b style="font-size:17px">${esc(c.name)}</b> <span class="tag ${c.status === "active" ? "ok" : ""}">${esc(c.status)}</span>
+      <div class="tablewrap"><table>
+        <tr><th>Pays</th><td>$${Number(c.rate_usd_per_1000)} per 1,000 eligible views · ${num(c.min_eligible_views)} minimum · $${Number(c.cap_gross_usd)} cap per post · ${Number(c.fee_pct)}% fee</td></tr>
+        <tr><th>Submit within</th><td>${c.submit_window_minutes} minutes of publishing</td></tr>
+        <tr><th>Closes</th><td>${when(c.closes_at)}</td></tr>
+        <tr><th>Platforms</th><td>${(c.platforms || []).map(esc).join(", ")}</td></tr>
+        <tr><th>Caption must include</th><td>${(c.caption_must_include || []).map(esc).join(" · ")}</td></tr>
+        <tr><th>Budget left</th><td>${snap ? money(snap.remaining_budget_usd) + ", seen " + when(snap.at) : "no snapshot"}</td></tr>
+        <tr><th>Terms last checked</th><td>${when(c.terms_checked_at)} <span class="mute">Check the live page before relying on these.</span></td></tr>
+        <tr><th>Authorized channels</th><td>${S.channels.filter(ch => ch.campaign_id === c.id).map(ch => esc(ch.platform + "/" + ch.slug)).join(", ") || "none"}</td></tr>
+      </table></div>
+      <p><a class="b ghost" href="${safeUrl(c.campaign_url)}" target="_blank" rel="noopener">Campaign page</a> <a class="b ghost" href="${safeUrl(c.brief_url)}" target="_blank" rel="noopener">Brief</a></p></div>`;
+    }).join("");
+  },
+
+  earnings() {
+    return `<h1>Earnings</h1><div class="card tablewrap"><table>
+      <tr><th>Post</th><th>State</th><th>Views</th><th>Eligible views</th><th>Estimate after fee</th><th>Approved</th><th>Paid</th></tr>
+      ${S.posts.filter(p => p.published_at).map(p => `<tr><td><a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">${esc(p.slug)}</a><div class="small mute">published ${when(p.published_at)}</div></td>
+        <td>${p.window_missed ? `<span class="tag bad">missed window</span>` : `<span class="tag">${esc(p.state)}</span>`}${p.submission_id ? `<div class="mono mute">${esc(p.submission_id)}</div>` : ""}</td>
+        <td>${num(p.views)}</td><td>${num(p.eligible_views)}</td><td>${money(p.est_after_fee_usd)}</td><td>${money(p.approved_usd)}</td><td>${money(p.paid_usd)}</td></tr>`).join("") || `<tr><td colspan="7" class="mute">No published posts.</td></tr>`}
+    </table></div><p class="small mute">A dash means nothing has been recorded. Public views never produce an estimate; only eligible views reported by the campaign do.</p>`;
+  },
+
+  history() {
+    return `<h1>History</h1><div class="card tablewrap"><table><tr><th>When</th><th>Who</th><th>What</th></tr>
+    ${S.events.map(e => { const row = e.after || e.before || {}; const label = row.slug || row.title || row.short_id || row.name || "";
+      const change = e.action === "update" && e.before && e.after && e.before.state !== e.after.state ? ` → ${esc(e.after.state)}` : "";
+      return `<tr><td class="small">${when(e.at)}</td><td class="small">${esc(name(e.actor))}</td><td>${esc(e.action)} ${esc(e.entity)} <span class="mono">${esc(label)}</span>${change}</td></tr>`; }).join("")}
+    </table></div>`;
+  },
+};
+
+function addSource() {
+  if (!S.channels.length) return "";
+  return `<h2>Add a clip to the inbox</h2><div class="card"><div class="row">
+    <div class="grow"><input id="srcUrl" placeholder="https:// link to a clip from an authorized channel"></div>
+    <div><select id="srcChannel">${S.channels.map(c => `<option value="${c.id}">${esc(c.slug)}</option>`).join("")}</select></div>
+    <div><button class="b" data-act="addSource">Queue for the Editor</button></div></div>
+    <p class="small mute">Only channels a partner has authorized are listed. The Editor agent renders it on whichever laptop is running.</p></div>`;
+}
+
+async function loadVideos() {
+  for (const v of document.querySelectorAll("video[data-media]")) {
+    const path = v.dataset.media, note = v.parentElement.querySelector("[data-medianote]");
+    if (!path.startsWith("masters/")) { note.textContent = path ? "File is on a laptop, not in shared storage: " + path : "No file recorded"; continue; }
+    if (!videoUrls[path]) {
+      const {data, error} = await db.storage.from("masters").createSignedUrl(path.slice(8), 3600);
+      if (error) { note.textContent = "Could not load the file: " + error.message; continue; }
+      videoUrls[path] = data.signedUrl;
+    }
+    if (v.src !== videoUrls[path]) v.src = videoUrls[path];
+  }
+}
+
+const ACTIONS = {
+  async approve(d) { await call(db.rpc("review_post", {p_slug: d.slug, p_decision: "approve"}), "Approved " + d.slug); },
+  async revise(d) { const note = prompt("What needs to change?"); if (note) await call(db.rpc("review_post", {p_slug: d.slug, p_decision: "revise", p_note: note}), "Sent back"); },
+  async saveCaption(d) { const text = $(`[data-caption="${CSS.escape(d.clip)}"]`).value; await call(db.from("clips").update({caption: text}).eq("short_id", d.clip), "Caption saved"); },
+  async copy(d) { try { await navigator.clipboard.writeText(d.text); toast("Copied"); } catch { toast("Copy failed; select the text by hand", true); } },
+  async published(d) {
+    const url = $(`[data-puburl="${CSS.escape(d.slug)}"]`).value.trim();
+    if (!/^https:\/\//.test(url)) return toast("Paste the public https:// link of the live post first", true);
+    if (!confirm("Is this post public right now?\n\n" + url + "\n\nThis starts the submission clock.")) return;
+    if (await call(db.rpc("record_published", {p_slug: d.slug, p_url: url, p_at: new Date().toISOString()}), "Clock started. Submit it to the campaign now.")) { tab = "launch"; render(); }
+  },
+  async submitted(d) {
+    const receipt = $(`[data-receipt="${CSS.escape(d.slug)}"]`).value.trim();
+    if (!receipt) return toast("Paste the receipt the campaign page showed you", true);
+    await call(db.rpc("record_submitted", {p_slug: d.slug, p_receipt: receipt, p_at: new Date().toISOString()}), "Receipt recorded");
+  },
+  async claim() { const jobs = await call(db.rpc("claim_job", {p_agent: "human"})); if (jobs && !jobs.length) toast("Nothing to take"); },
+  async done(d) { await call(db.rpc("finish_job", {p_id: d.id, p_ok: true}), "Done"); },
+  async release(d) { await call(db.rpc("release_job", {p_id: d.id}), "Back in the queue"); },
+  async addJob() { const title = $("#jobTitle").value.trim(); if (title) await call(db.from("jobs").insert({title, kind: $("#jobKind").value}), "Added"); },
+  async toggleAgent(d) { await call(db.from("agents").update({enabled: d.on === "1"}).eq("name", d.name), d.name + (d.on === "1" ? " on" : " off")); },
+  async addSource() {
+    const url = $("#srcUrl").value.trim(), ch = S.channels.find(c => c.id === $("#srcChannel").value);
+    if (!/^https:\/\//.test(url) || !ch) return toast("Paste an https:// clip link", true);
+    const {data, error} = await db.from("sources").insert({campaign_id: ch.campaign_id, channel_id: ch.id, creator: ch.slug,
+      clip_url: url, permission_basis: ch.permission_basis, status: "queued"}).select().single();
+    if (error) return toast(error.message.includes("sources_clip_url") ? "That clip is already in the inbox" : error.message, true);
+    await call(db.from("jobs").insert({kind: "render", source_id: data.id, priority: 60, title: "Edit " + ch.slug + " clip: " + url, payload: {source_id: data.id}}), "Queued for the Editor");
+  },
+};
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-tab]"); if (t) { tab = t.dataset.tab; render(); return; }
+  const a = e.target.closest("[data-act]"); if (a && !a.disabled) ACTIONS[a.dataset.act](a.dataset);
+});
+$("#refresh").onclick = load;
+$("#signout").onclick = async () => { await db.auth.signOut(); location.reload(); };
+$("#loginForm").onsubmit = async e => {
+  e.preventDefault(); $("#loginMsg").textContent = "Signing in…";
+  const {data, error} = await db.auth.signInWithPassword({email: $("#email").value.trim(), password: $("#password").value});
+  if (error) { $("#loginMsg").textContent = error.message; return; }
+  $("#password").value = ""; $("#loginMsg").textContent = ""; enter(data.session);
+};
+$("#signup").onclick = async () => {
+  const email = $("#email").value.trim(), password = $("#password").value;
+  if (!email || password.length < 10) { $("#loginMsg").textContent = "Enter your invited email and a password of at least 10 characters, then press this button again."; return; }
+  $("#loginMsg").textContent = "Creating your login…";
+  const {data, error} = await db.auth.signUp({email, password, options: {emailRedirectTo: location.origin + location.pathname}});
+  if (error) { $("#loginMsg").textContent = error.message; return; }
+  $("#password").value = "";
+  if (data.session) { enter(data.session); return; }
+  $("#loginMsg").textContent = "Check your inbox for a confirmation email from Supabase and click its link. Then come back here and sign in.";
+};
+start();
+</script>
+</body>
+</html>

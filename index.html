@@ -226,6 +226,8 @@ const VIEWS = {
           <div class="small mute">${esc(p.campaign_name)} · ${p.duration_seconds ? Number(p.duration_seconds).toFixed(1) + "s" : ""} · approvals ${p.approvals} of ${p.approvals_required}</div>
           <label>Caption</label><textarea data-caption="${esc(p.clip)}" ${p.state === "approved" ? "readonly" : ""}>${esc(p.caption)}</textarea>
           ${(p.caption_missing || []).length ? `<p class="small" style="color:var(--red)">Caption is missing: ${p.caption_missing.map(esc).join(", ")}</p>` : ""}
+          ${(() => { const rj = S.jobs.find(j => j.kind === "review" && j.payload && j.payload.clip === p.clip), q = rj && rj.payload.quality;
+              return q && (q.warnings || []).length ? `<p class="small" style="color:var(--gold)">Check before approving: ${q.warnings.map(esc).join("; ")}</p>` : ""; })()}
           <p class="small mute">Watch the whole clip and check the captions against what is said before approving. The transcript is machine-made.</p>
           ${p.state === "approved" ? `<p class="small">Approved. Publish it from the Launch tab.</p>` : `
           <button class="b ghost" data-act="saveCaption" data-clip="${esc(p.clip)}">Save caption</button>
@@ -369,11 +371,13 @@ const VIEWS = {
 
 function addSource() {
   if (!S.channels.length) return "";
-  return `<h2>Add a clip to the inbox</h2><div class="card"><div class="row">
-    <div class="grow"><input id="srcUrl" placeholder="https:// link to a clip from an authorized channel"></div>
-    <div><select id="srcChannel">${S.channels.map(c => `<option value="${c.id}">${esc(c.slug)}</option>`).join("")}</select></div>
-    <div><button class="b" data-act="addSource">Queue for the Editor</button></div></div>
-    <p class="small mute">Only channels a partner has authorized are listed. The Editor agent renders it on whichever laptop is running.</p></div>`;
+  return `<h2>Make clips from a link</h2><div class="card"><div class="row">
+    <div class="grow"><label>Link (Kick, Twitch or YouTube)</label><input id="srcUrl" placeholder="https://…"></div>
+    <div style="width:190px"><label>This link is</label><select id="srcKind"><option value="clip">one short clip</option><option value="stream">a full stream recording</option></select></div>
+    <div style="width:150px"><label>Streamer</label><select id="srcChannel">${S.channels.map(c => `<option value="${c.id}">${esc(c.slug)}</option>`).join("")}</select></div>
+    <div style="width:120px"><label>Clips to make</label><select id="srcClips"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>8</option></select></div>
+    </div><p><button class="b" data-act="addSource">Queue it</button></p>
+    <p class="small mute">A clip goes straight to the Editor. For a full stream, the Spotter first finds its loudest separate moments (plus chat spikes on YouTube) and the Editor cuts each one; "Clips to make" applies to streams. Loud is not always good: every result still waits here for your review. Only streamers a partner has authorized are listed, and an agent laptop must be running.</p></div>`;
 }
 
 async function loadVideos() {
@@ -445,10 +449,15 @@ const ACTIONS = {
   async addSource() {
     const url = $("#srcUrl").value.trim(), ch = S.channels.find(c => c.id === $("#srcChannel").value);
     if (!/^https:\/\//.test(url) || !ch) return toast("Paste an https:// clip link", true);
-    const {data, error} = await db.from("sources").insert({campaign_id: ch.campaign_id, channel_id: ch.id, creator: ch.slug,
-      clip_url: url, permission_basis: ch.permission_basis, status: "queued"}).select().single();
+    const stream = $("#srcKind").value === "stream", clips = Number($("#srcClips").value);
+    const row = {campaign_id: ch.campaign_id, channel_id: ch.id, creator: ch.slug, permission_basis: ch.permission_basis, status: "queued"};
+    row[stream ? "vod_url" : "clip_url"] = url;
+    const {data, error} = await db.from("sources").insert(row).select().single();
     if (error) return toast(error.message.includes("sources_clip_url") ? "That clip is already in the inbox" : error.message, true);
-    await call(db.from("jobs").insert({kind: "render", source_id: data.id, priority: 60, title: "Edit " + ch.slug + " clip: " + url, payload: {source_id: data.id}}), "Queued for the Editor");
+    const job = stream
+      ? {kind: "analyze", source_id: data.id, priority: 62, title: "Find " + clips + " moments in " + ch.slug + " stream: " + url, payload: {source_id: data.id, clips}}
+      : {kind: "render", source_id: data.id, priority: 60, title: "Edit " + ch.slug + " clip: " + url, payload: {source_id: data.id}};
+    await call(db.from("jobs").insert(job), stream ? "Queued for the Spotter" : "Queued for the Editor");
   },
 };
 

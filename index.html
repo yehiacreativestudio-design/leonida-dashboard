@@ -7,6 +7,8 @@
 <title>Leonida Uncut</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Luckiest+Guy&family=Poppins:wght@800&display=swap">
 <style>
 :root{--bg:#0d1f24;--panel:#15303a;--panel2:#1b3b46;--line:#335560;--text:#f1f4ec;--mute:#a9c1bd;
   --teal:#7fe0d2;--gold:#ffd58a;--red:#ff7b6b;--green:#8fe39a;--radius:12px}
@@ -56,6 +58,12 @@ th{color:var(--mute);font-weight:600;font-size:12.5px}
 .login{max-width:380px;margin:9vh auto;padding:0 16px}
 .hide{display:none}
 .switch{min-width:64px}
+.phone{width:270px;height:480px;border-radius:18px;overflow:hidden;position:relative;border:1px solid var(--line);background:#0a1418}
+.phone .cam{position:absolute;left:0;right:0;top:0;background:linear-gradient(135deg,#3b2a4a,#1d2f45);display:flex;align-items:center;justify-content:center;color:#ffffff66;font-size:12px}
+.phone .game{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1f4a3a,#14303a 60%,#3a2f1f);display:flex;align-items:center;justify-content:center;color:#ffffff55;font-size:12px}
+.phone .cap{position:absolute;left:0;right:0;text-align:center;transform:translateY(-50%);line-height:1.1;paint-order:stroke fill;white-space:nowrap}
+.field{min-width:150px;flex:1}
+.check{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}.check input{width:auto}
 </style>
 </head>
 <body>
@@ -97,9 +105,13 @@ const money = v => v == null ? "—" : "$" + Number(v).toFixed(2);
 const num = v => v == null ? "—" : Number(v).toLocaleString();
 const when = t => t ? new Date(t).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"}) : "—";
 const TABS = [["overview", "Overview"], ["review", "Review"], ["launch", "Launch"], ["queue", "Queue"],
-              ["agents", "Agents"], ["campaigns", "Campaigns"], ["earnings", "Earnings"], ["history", "History"]];
+              ["style", "Style"], ["agents", "Agents"], ["campaigns", "Campaigns"], ["earnings", "Earnings"], ["history", "History"]];
+const STYLE_DEFAULT = {font: "Anton", size: 112, color: "#FFFFFF", highlight: "#FFE14D", word_highlight: true, stroke: "#000000",
+  stroke_width: 0.10, uppercase: true, max_words: 3, position: "seam", webcam_share: 0.36, show_disclosure: true, mask_strong_language: false};
+const FONT_CSS = {"Anton": "Anton", "Bangers": "Bangers", "Bebas Neue": "'Bebas Neue'", "Poppins": "Poppins", "Luckiest Guy": "'Luckiest Guy'"};
+let redoOpen = false;
 const UPLOAD = {youtube: "https://studio.youtube.com/", tiktok: "https://www.tiktok.com/tiktokstudio/upload"};
-let db, me = null, tab = "overview", S = {posts: [], jobs: [], agents: [], campaigns: [], snaps: [], events: [], partners: [], channels: []};
+let db, me = null, tab = "overview", S = {posts: [], jobs: [], agents: [], campaigns: [], snaps: [], events: [], partners: [], channels: [], style: null};
 const videoUrls = {};
 
 function toast(msg, isErr) {
@@ -133,7 +145,7 @@ async function enter(session) {
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
   $("#whoami").textContent = me.display_name;
   await load();
-  setInterval(() => { if (document.visibilityState === "visible" && !document.activeElement.matches("input,textarea,select")) load(); }, 20000);
+  setInterval(() => { if (document.visibilityState === "visible" && tab !== "style" && !redoOpen && !document.activeElement.matches("input,textarea,select")) load(); }, 20000);
   setInterval(tick, 1000);
 }
 
@@ -147,11 +159,13 @@ async function load() {
     db.from("events").select("id,at,actor,entity,action,after,before").order("id", {ascending: false}).limit(60),
     db.from("partners").select("id,display_name,kind"),
     db.from("channels").select("*").eq("active", true),
+    db.from("settings").select("value").eq("key", "style"),
   ];
   const r = await Promise.all(q);
   const bad = r.find(x => x.error);
   if (bad) { toast(bad.error.message, true); return; }
   [S.posts, S.jobs, S.agents, S.campaigns, S.snaps, S.events, S.partners, S.channels] = r.map(x => x.data);
+  S.style = Object.assign({}, STYLE_DEFAULT, (r[8].data[0] || {}).value || {});
   $("#fresh").textContent = "Updated " + new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
   render();
 }
@@ -173,6 +187,7 @@ function render() {
     `<button data-tab="${id}" class="${id === tab ? "on" : ""}">${label}${counts[id] ? `<span class="n ${id === "launch" && g.submitNow.length ? "hot" : ""}">${counts[id]}</span>` : ""}</button>`).join("");
   $("#view").innerHTML = VIEWS[tab](g);
   if (tab === "review") loadVideos();
+  if (tab === "style") drawPreview();
   tick();
 }
 
@@ -232,7 +247,9 @@ const VIEWS = {
           ${p.state === "approved" ? `<p class="small">Approved. Publish it from the Launch tab.</p>` : `
           <button class="b ghost" data-act="saveCaption" data-clip="${esc(p.clip)}">Save caption</button>
           <button class="b" data-act="approve" data-slug="${esc(p.slug)}" ${me.kind !== "human" ? "disabled" : ""}>Approve this file</button>
-          <button class="b ghost" data-act="revise" data-slug="${esc(p.slug)}">Send back</button>`}
+          <button class="b ghost" data-act="revise" data-slug="${esc(p.slug)}">Send back</button>
+          <button class="b ghost" data-act="openRedo" data-clip="${esc(p.clip)}">Fix on-screen captions / restyle</button>`}
+          <div data-redo="${esc(p.clip)}"></div>
         </div></div></div>`).join("") + addSource();
   },
 
@@ -268,6 +285,38 @@ const VIEWS = {
     if (!g.submitNow.length && !g.ready.length) html += `<p class="card mute">Nothing is approved for publishing.</p>`;
     if (g.missed.length) html += `<h2>Missed window</h2>` + g.missed.map(p => `<div class="card small" style="margin-bottom:8px"><b>${esc(p.slug)}</b> was published ${when(p.published_at)} and never submitted. Window closed ${when(p.submit_deadline)}. Not eligible without the organizer's written exception.</div>`).join("");
     return html;
+  },
+
+  style() {
+    const st = S.style || STYLE_DEFAULT, opt = (v, cur, label) => `<option value="${esc(v)}" ${String(v) === String(cur) ? "selected" : ""}>${esc(label || v)}</option>`;
+    const check = (key, label) => `<label class="check"><input type="checkbox" data-style="${key}" ${st[key] ? "checked" : ""}> ${label}</label>`;
+    return `<h1>Style</h1><p class="small mute">The look of every new clip, for both partners. To apply it to a clip that already exists, use "Fix on-screen captions / restyle" on that clip in Review.</p>
+    <div class="row"><div class="grow card">
+      <div class="row">
+        <div class="field"><label>Caption font</label><select data-style="font">${Object.keys(FONT_CSS).map(f => opt(f, st.font)).join("")}</select></div>
+        <div class="field"><label>Caption size: <span data-show="size">${st.size}</span></label><input type="range" min="60" max="170" step="2" data-style="size" value="${st.size}"></div>
+        <div class="field"><label>Words per line</label><select data-style="max_words">${[1, 2, 3, 4, 5].map(n => opt(n, st.max_words)).join("")}</select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Text colour</label><input type="color" data-style="color" value="${esc(st.color)}"></div>
+        <div class="field"><label>Spoken-word colour</label><input type="color" data-style="highlight" value="${esc(st.highlight)}"></div>
+        <div class="field"><label>Outline colour</label><input type="color" data-style="stroke" value="${esc(st.stroke)}"></div>
+        <div class="field"><label>Outline thickness</label><input type="range" min="0" max="0.2" step="0.01" data-style="stroke_width" value="${st.stroke_width}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Caption position</label><select data-style="position">
+          ${opt("seam", st.position, "Between webcam and gameplay")}${opt("top", st.position, "Top")}${opt("middle", st.position, "Middle")}${opt("lower", st.position, "Lower third")}${opt("bottom", st.position, "Bottom")}</select></div>
+        <div class="field"><label>Webcam panel height: <span data-show="webcam_share">${Math.round(st.webcam_share * 100)}%</span></label><input type="range" min="0.22" max="0.50" step="0.01" data-style="webcam_share" value="${st.webcam_share}"></div>
+      </div>
+      ${check("uppercase", "ALL CAPS")}
+      ${check("word_highlight", "Highlight each word as it is spoken")}
+      ${check("mask_strong_language", "Mask swearing in captions (slurs are always masked)")}
+      ${check("show_disclosure", "Show the campaign's sponsorship label at the start")}
+      <p style="margin-top:16px"><button class="b" data-act="saveStyle" ${me.kind !== "human" ? "disabled" : ""}>Save style</button>
+        <button class="b ghost" data-act="resetStyle">Back to default</button></p>
+    </div>
+    <div><div class="phone" id="phone"><div class="cam">webcam</div><div class="game">gameplay</div><div class="cap" id="cap"></div></div>
+      <p class="small mute" style="max-width:270px">Preview is approximate. The clip itself is rendered at 1080×1920, up to 60 frames per second.</p></div></div>`;
   },
 
   queue() {
@@ -369,6 +418,29 @@ const VIEWS = {
   },
 };
 
+function readStyle() {
+  const st = Object.assign({}, STYLE_DEFAULT, S.style || {});
+  document.querySelectorAll("[data-style]").forEach(el => {
+    const key = el.dataset.style;
+    st[key] = el.type === "checkbox" ? el.checked : (el.type === "range" || key === "max_words") ? Number(el.value) : el.value;
+  });
+  return st;
+}
+function drawPreview() {
+  const phone = $("#phone"); if (!phone) return;
+  const st = readStyle(), scale = 270 / 1080, camH = Math.round(480 * st.webcam_share);
+  phone.querySelector(".cam").style.height = camH + "px";
+  phone.querySelector(".game").style.height = (480 - camH) + "px";
+  const centre = {seam: camH, top: 480 * 0.16, middle: 240, lower: 480 * 0.66, bottom: 480 * 0.80}[st.position] ?? camH;
+  const words = ["He", "just", "had", "to", "park"].slice(0, st.max_words), size = st.size * scale;
+  const cap = $("#cap");
+  const hex = (v, d) => /^#[0-9a-fA-F]{6}$/.test(v || "") ? v : d;      // settings come from the database: accept only plain colours
+  cap.style.cssText = `top:${Number(centre)}px;font-family:${FONT_CSS[st.font] || "Anton"},Impact,sans-serif;font-size:${Number(size)}px;color:${hex(st.color, "#FFFFFF")};-webkit-text-stroke:${(size * Number(st.stroke_width) * 2).toFixed(1)}px ${hex(st.stroke, "#000000")};font-weight:${st.font === "Poppins" ? 800 : 400}`;
+  cap.innerHTML = words.map((w, i) => `<span style="${st.word_highlight && i === Math.min(1, words.length - 1) ? "color:" + hex(st.highlight, "#FFE14D") : ""}">${st.uppercase ? w.toUpperCase() : w}</span>`).join(" ");
+  document.querySelectorAll("[data-show]").forEach(el => { const v = st[el.dataset.show]; el.textContent = el.dataset.show === "webcam_share" ? Math.round(v * 100) + "%" : v; });
+}
+document.addEventListener("input", e => { if (e.target.matches("[data-style]")) drawPreview(); });
+
 function addSource() {
   if (!S.channels.length) return "";
   return `<h2>Make clips from a link</h2><div class="card"><div class="row">
@@ -408,6 +480,47 @@ const ACTIONS = {
     const receipt = $(`[data-receipt="${CSS.escape(d.slug)}"]`).value.trim();
     if (!receipt) return toast("Paste the receipt the campaign page showed you", true);
     await call(db.rpc("record_submitted", {p_slug: d.slug, p_receipt: receipt, p_at: new Date().toISOString()}), "Receipt recorded");
+  },
+  async saveStyle() { const st = readStyle(); if (await call(db.from("settings").upsert({key: "style", value: st, updated_at: new Date().toISOString()}), "Style saved. New clips will use it.")) S.style = st; },
+  async resetStyle() { S.style = Object.assign({}, STYLE_DEFAULT); render(); toast("Default look loaded. Press Save style to keep it."); },
+  async openRedo(d) {
+    const box = $(`[data-redo="${CSS.escape(d.clip)}"]`);
+    if (box.innerHTML) { box.innerHTML = ""; redoOpen = false; return; }
+    const {data: clip, error} = await db.from("clips").select("id,short_id,source_id,edit").eq("short_id", d.clip).single();
+    if (error) return toast(error.message, true);
+    if (!clip.edit || !(clip.edit.captions || []).length) return toast("This clip was made before caption editing existed. Send it back and queue its link again.", true);
+    redoOpen = true;
+    box.innerHTML = `<div class="card" style="margin-top:12px;background:var(--panel2)"><b>On-screen captions</b>
+      <p class="small mute">Fix any word the transcript got wrong. Empty a line to remove it. Timing is kept.</p>
+      ${clip.edit.captions.map((c, i) => `<div class="row" style="align-items:center;margin-bottom:6px"><span class="small mute" style="width:52px">${Number(c.start).toFixed(1)}s</span><div class="grow"><input data-line="${i}" value="${esc(c.text)}"></div></div>`).join("")}
+      <label class="check"><input type="checkbox" data-redo-rechunk> Regroup the words to the "words per line" set in Style</label>
+      <label class="check"><input type="checkbox" data-redo-nocam> Gameplay only (hide the webcam panel)</label>
+      <p style="margin-top:12px"><button class="b" data-act="redo" data-clip="${esc(clip.short_id)}">Re-render with these captions and the current Style</button></p>
+      <p class="small mute">This version leaves Review now. The new one appears when the Editor agent finishes, usually in a couple of minutes.</p></div>`;
+    box._clip = clip;
+  },
+  async redo(d) {
+    const box = $(`[data-redo="${CSS.escape(d.clip)}"]`), clip = box._clip, e = clip.edit;
+    const captions = [];
+    e.captions.forEach((c, i) => {
+      const words = box.querySelector(`[data-line="${i}"]`).value.trim().split(/\s+/).filter(Boolean);
+      if (!words.length) return;
+      const old = c.words || [];
+      const timed = words.length === old.length ? words.map((w, k) => [old[k][0], old[k][1], w])
+        : words.map((w, k) => [+(c.start + (c.end - c.start) * k / words.length).toFixed(3), +(c.start + (c.end - c.start) * (k + 1) / words.length).toFixed(3), w]);
+      captions.push({start: c.start, end: c.end, text: words.join(" "), words: timed});
+    });
+    const post = S.posts.find(p => p.clip === d.clip) || {};
+    const edit = {ranges: e.ranges, layout: box.querySelector("[data-redo-nocam]").checked ? {} : e.layout, captions,
+      style: S.style, hook: e.hook, language: e.language, rechunk: box.querySelector("[data-redo-rechunk]").checked};
+    const payload = {source_id: clip.source_id, redo_clip: clip.short_id, edit, post_caption: post.caption || null};
+    if (e.section) payload.section = e.section;
+    const {error} = await db.from("jobs").insert({kind: "render", source_id: clip.source_id, priority: 66, title: "Re-render clip " + clip.short_id, payload});
+    if (error) return toast(error.message, true);
+    const slugs = S.posts.filter(p => p.clip === d.clip && ["draft", "in_review", "approved"].includes(p.state)).map(p => p.slug);
+    if (slugs.length) await db.from("posts").update({state: "withdrawn"}).in("slug", slugs);
+    await db.from("jobs").update({state: "cancelled"}).eq("kind", "review").eq("state", "queued").contains("payload", {clip: clip.short_id});
+    redoOpen = false; toast("Queued. The new version will appear in Review."); await load();
   },
   async claim() { const jobs = await call(db.rpc("claim_job", {p_agent: "human"})); if (jobs && !jobs.length) toast("Nothing to take"); },
   async done(d) { await call(db.rpc("finish_job", {p_id: d.id, p_ok: true}), "Done"); },

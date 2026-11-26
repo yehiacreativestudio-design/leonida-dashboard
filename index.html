@@ -437,16 +437,23 @@ const VIEWS = {
   },
 
   queue() {
-    return `<h1>To-do list</h1><p class="lede">Jobs for the two of you and for the agents. Agents take the clip jobs on their own.</p><p><button class="b" data-act="claim">Take the next job</button></p>
-    <div class="card tablewrap"><table><tr><th>Job</th><th>Kind</th><th>Due</th><th>Who</th><th></th></tr>
-    ${S.jobs.map(j => `<tr><td>${esc(j.title)}${j.payload && j.payload.note ? `<div class="small mute">${esc(j.payload.note)}</div>` : ""}</td>
-      <td><span class="tag">${esc(j.kind)}</span></td><td class="small">${when(j.due_at)}</td>
-      <td class="small">${j.state === "claimed" ? esc(j.claimed_agent || name(j.claimed_by)) + " until " + when(j.lease_expires_at) : "open"}</td>
-      <td>${j.state === "claimed" && j.claimed_by === me.id ? `<button class="b" data-act="done" data-id="${j.id}">Done</button> <button class="b ghost" data-act="release" data-id="${j.id}">Release</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="5" class="mute">Queue is empty.</td></tr>`}
+    const forAgents = j => ["analyze", "render", "ingest"].includes(j.kind) || (j.claimed_agent && j.claimed_agent !== "human");
+    const mine = S.jobs.filter(j => !forAgents(j)), theirs = S.jobs.filter(forAgents);
+    const who = j => j.state !== "claimed" ? "open" : (j.claimed_agent && j.claimed_agent !== "human" ? "the " + j.claimed_agent + " agent" : name(j.claimed_by)) + " until " + when(j.lease_expires_at);
+    return `<h1>To-do list</h1><p class="lede">Jobs for the two of you. The agents' own work is listed underneath and looks after itself.</p>
+    <p><button class="b" data-act="claim">Take the next job</button></p>
+    <div class="card tablewrap"><table><tr><th>For you</th><th>Due</th><th>Who</th><th></th></tr>
+    ${mine.map(j => `<tr><td>${esc(j.title)}${j.payload && j.payload.note ? `<div class="small mute">${esc(j.payload.note)}</div>` : ""}</td>
+      <td class="small">${when(j.due_at)}</td><td class="small">${esc(who(j))}</td>
+      <td>${j.state === "claimed" && j.claimed_by === me.id && j.claimed_agent === "human" ? `<button class="b" data-act="done" data-id="${j.id}">Done</button> <button class="b ghost" data-act="release" data-id="${j.id}">Give back</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="4" class="mute">Nothing for you right now.</td></tr>`}
     </table></div>
-    <h2>Add a job</h2><div class="card"><div class="row"><div class="grow"><input id="jobTitle" placeholder="What needs doing"></div>
-      <div><select id="jobKind"><option>other</option><option>review</option><option>metrics</option><option>render</option></select></div>
-      <div><button class="b" data-act="addJob">Add</button></div></div></div>`;
+    <h2>The agents are working on</h2>
+    <div class="card tablewrap"><table>
+    ${theirs.map(j => `<tr><td>${esc(j.title)}</td><td class="small">${j.state === "claimed" ? "in progress" : "waiting its turn"}</td></tr>`).join("") || `<tr><td class="mute">Nothing queued for the agents.</td></tr>`}
+    </table></div>
+    <h2>Add a job for the two of you</h2><div class="card"><div class="row"><div class="grow"><input id="jobTitle" placeholder="What needs doing" aria-label="What needs doing"></div>
+      <div><button class="b" data-act="addJob">Add</button></div></div>
+      <p class="small mute" style="margin-bottom:0">To have clips made, use Make clips. Notes written here are for people; the agents do not read them.</p></div>`;
   },
 
   agents() {
@@ -703,10 +710,10 @@ const ACTIONS = {
     await call(db.from("jobs").insert({kind: "render", source_id: data.id, priority: 61, title: "Edit uploaded " + ch.slug + " video: " + file.name.slice(0, 60),
       payload: {source_id: data.id, storage: "uploads/" + path}}), "Uploaded and queued for the Editor");
   },
-  async claim() { const jobs = await call(db.rpc("claim_job", {p_agent: "human"})); if (jobs && !jobs.length) toast("Nothing to take"); },
+  async claim() { const jobs = await call(db.rpc("claim_job", {p_agent: "human", p_kinds: ["other", "metrics", "review", "publish", "submit"]})); if (jobs && !jobs.length) toast("Nothing to take"); },
   async done(d) { await call(db.rpc("finish_job", {p_id: d.id, p_ok: true}), "Done"); },
   async release(d) { await call(db.rpc("release_job", {p_id: d.id}), "Back in the queue"); },
-  async addJob() { const title = $("#jobTitle").value.trim(); if (title) await call(db.from("jobs").insert({title, kind: $("#jobKind").value}), "Added"); },
+  async addJob() { const title = $("#jobTitle").value.trim(); if (title) await call(db.from("jobs").insert({title, kind: "other"}), "Added"); },
   async toggleAgent(d) { await call(db.from("agents").update({enabled: d.on === "1"}).eq("name", d.name), d.name + (d.on === "1" ? " on" : " off")); },
   async addChannel(d) {
     const q = k => $(`[data-ch-${k}="${CSS.escape(d.campaign)}"]`).value.trim();

@@ -26,11 +26,32 @@ header{position:sticky;top:0;z-index:5;background:#0d1f24f2;backdrop-filter:blur
 .bar{max-width:1100px;margin:auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .brand{font-weight:800;letter-spacing:.08em;font-size:13px;color:var(--gold)}
 .who{margin-left:auto;color:var(--mute);font-size:13px;display:flex;gap:10px;align-items:center}
-nav{max-width:1100px;margin:auto;padding:0 10px;display:flex;gap:2px;overflow-x:auto}
-nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);padding:10px 12px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+nav{max-width:1100px;margin:auto;padding:0 10px;display:flex;gap:2px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);padding:12px 16px;font:inherit;font-weight:650;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px}
 nav button.on{color:var(--text);border-color:var(--teal)}
-nav .n{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--panel2);font-size:12px;text-align:center}
+nav .n{display:inline-block;min-width:22px;padding:0 7px;border-radius:11px;background:var(--panel2);color:var(--text);font-size:12.5px;line-height:22px;text-align:center;font-variant-numeric:tabular-nums}
 nav .n.hot{background:var(--red);color:#1a0b08}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.todo{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);margin-bottom:10px}
+.todo .big{font-size:32px;font-weight:800;min-width:46px;text-align:center;line-height:1;font-variant-numeric:tabular-nums}
+.todo .what{flex:1;min-width:0}.todo .what b{display:block;font-size:16.5px}.todo .what span{color:var(--mute);font-size:14px}
+.todo.urgent{border-color:var(--red);background:#2b1d1c}.todo.urgent .big{color:var(--red)}
+.callout{border:1px solid #6a5a2c;background:#2a2819;color:var(--text);padding:10px 12px;border-radius:9px;margin:10px 0;font-size:14.5px}
+.callout.danger{border-color:#7a3a33;background:#2e1c1a}
+.callout b{display:block;margin-bottom:2px}.callout ul{margin:4px 0 0;padding-left:18px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--panel2);font-size:13px;font-weight:650;margin:0 6px 6px 0}
+.chip.ok{color:var(--green)}.chip.wait{color:var(--gold)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--mute);flex:none}.dot.on{background:var(--green)}.dot.warn{background:var(--gold)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+button.b.big{padding:11px 20px;font-size:16px}
+button.b.danger-ghost{background:none;color:var(--red);border:1px solid #6b3a34}
+.clip{display:grid;grid-template-columns:250px 1fr;gap:18px;align-items:start}
+.clip video{width:250px}
+.menu{display:grid;gap:8px}
+.menu button{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;color:var(--text);font:inherit;cursor:pointer}
+.menu button b{display:block}.menu button span.d{color:var(--mute);font-size:14px}.menu button .go{color:var(--mute);font-size:20px}
+.back{background:none;border:0;color:var(--teal);font:inherit;font-weight:650;padding:6px 0;cursor:pointer}
+.lede{color:var(--mute);margin:-6px 0 14px;max-width:62ch}
 main{max-width:1100px;margin:auto;padding:18px 16px 60px}
 h1{font-size:26px;letter-spacing:-.02em;margin:6px 0 14px}
 h2{font-size:17px;margin:22px 0 10px}
@@ -77,6 +98,14 @@ main{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
   body{font-size:16px}
   h1{font-size:22px}
   .bar{padding:10px 12px}.bar #fresh{display:none}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:none;background:#0d1f24fa;border-top:1px solid var(--line);border-bottom:0;padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px}
+  nav button{flex:1;justify-content:center;border-bottom:0;border-radius:10px;padding:11px 4px;font-size:14.5px}
+  nav button.on{background:var(--panel2)}
+  .clip{grid-template-columns:1fr}.clip video{width:100%}
+  textarea{min-height:112px}
+  .actions .b{flex:1 1 100%;text-align:center}
+  .todo{padding:14px;gap:8px 12px;flex-wrap:wrap}.todo .what{flex:1 1 55%}.todo .b{flex:1 1 100%;text-align:center;padding:12px 14px}
+  .todo .big{min-width:0;font-size:30px}
   main{padding:14px 12px calc(80px + env(safe-area-inset-bottom))}
   .card{padding:12px 13px}
   button.b,a.b{padding:12px 16px;font-size:16px}                 /* thumb-sized */
@@ -87,7 +116,7 @@ main{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
   .count{font-size:56px}
   th,td{padding:7px 6px}
   .phone{margin:auto}
-  #toast{bottom:calc(16px + env(safe-area-inset-bottom));width:92vw;text-align:center}
+  #toast{bottom:calc(78px + env(safe-area-inset-bottom));width:92vw;text-align:center}   /* clear of the bottom bar */
 }
 </style>
 </head>
@@ -112,10 +141,10 @@ main{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
 
 <div id="app" class="hide">
   <header>
-    <div class="bar"><span class="brand">LEONIDA UNCUT</span><span id="fresh" class="small mute"></span>
-      <span class="who"><span id="whoami"></span><button class="b ghost" id="refresh">Refresh</button><button class="b ghost" id="signout">Sign out</button></span></div>
-    <nav id="nav"></nav>
+    <div class="bar"><span class="brand">LEONIDA UNCUT</span>
+      <span class="who"><span id="agentDot" class="dot" aria-hidden="true"></span><span id="agentLine" class="small"></span><span id="fresh" class="small mute"></span></span></div>
   </header>
+  <nav id="nav" aria-label="Main"></nav>
   <main id="view"></main>
 </div>
 <div id="toast"></div>
@@ -129,8 +158,15 @@ const safeUrl = u => /^https:\/\//i.test(u || "") ? esc(u) : "#";
 const money = v => v == null ? "—" : "$" + Number(v).toFixed(2);
 const num = v => v == null ? "—" : Number(v).toLocaleString();
 const when = t => t ? new Date(t).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"}) : "—";
-const TABS = [["overview", "Overview"], ["review", "Review"], ["launch", "Launch"], ["queue", "Queue"],
-              ["style", "Style"], ["agents", "Agents"], ["campaigns", "Campaigns"], ["earnings", "Earnings"], ["history", "History"]];
+const TABS = [["home", "Home"], ["review", "Review"], ["post", "Post"], ["more", "More"]];
+const MORE = [["make", "Make clips", "Paste a clip or stream link, or upload a video"],
+              ["style", "Caption style", "Font, size, colours and position for new clips"],
+              ["agents", "Agents", "See what is running and switch agents on or off"],
+              ["campaigns", "Campaigns and streamers", "Terms, deadlines and who you may clip"],
+              ["earnings", "Earnings", "Views, estimates and money received per post"],
+              ["queue", "To-do list", "Jobs for people and for the agents"],
+              ["history", "History", "Every change and who made it"]];
+const PLATFORM = {youtube: "YouTube", tiktok: "TikTok"};
 const STYLE_DEFAULT = {font: "Anton", size: 112, color: "#FFFFFF", highlight: "#FFE14D", word_highlight: true, stroke: "#000000",
   stroke_width: 0.10, uppercase: true, max_words: 3, position: "seam", webcam_share: 0.36, show_disclosure: true, mask_strong_language: false};
 const FONT_CSS = {"Anton": "Anton", "Bangers": "Bangers", "Bebas Neue": "'Bebas Neue'", "Poppins": "Poppins", "Luckiest Guy": "'Luckiest Guy'"};
@@ -138,7 +174,7 @@ let redoOpen = false;
 const canShareFiles = (() => { try { return !!navigator.canShare && navigator.canShare({files: [new File([""], "a.mp4", {type: "video/mp4"})]}); } catch { return false; } })();
 const videoFiles = {};          // storage path -> File, fetched ahead so sharing happens on the tap itself
 const UPLOAD = {youtube: "https://studio.youtube.com/", tiktok: "https://www.tiktok.com/tiktokstudio/upload"};
-let db, me = null, tab = "overview", S = {posts: [], jobs: [], agents: [], campaigns: [], snaps: [], events: [], partners: [], channels: [], style: null};
+let db, me = null, tab = "home", S = {posts: [], jobs: [], agents: [], campaigns: [], snaps: [], events: [], partners: [], channels: [], style: null};
 const videoUrls = {};
 
 function toast(msg, isErr) {
@@ -207,12 +243,40 @@ const groups = () => ({
 });
 const name = id => (S.partners.find(p => p.id === id) || {}).display_name || (id ? "someone" : "system");
 
+// One clip is posted to several platforms; people think in clips, so group the posts.
+function clipGroups() {
+  const map = new Map();
+  for (const p of S.posts) {
+    if (!["draft", "in_review", "approved"].includes(p.state)) continue;
+    if (!map.has(p.clip)) map.set(p.clip, {clip: p.clip, first: p, posts: []});
+    map.get(p.clip).posts.push(p);
+  }
+  return [...map.values()].map(c => Object.assign(c, {waiting: c.posts.filter(p => p.state !== "approved"), approved: c.posts.filter(p => p.state === "approved")}));
+}
+function reviewJob(clip) { return S.jobs.find(j => j.kind === "review" && j.payload && j.payload.clip === clip); }
+function warningsFor(clip) { const j = reviewJob(clip); return (j && j.payload.quality && j.payload.quality.warnings) || []; }
+const serious = w => /explicit|slur|nudity/i.test(w);
+
+function agentStatus() {
+  if (!S.agents.length) return {cls: "", text: "No agents set up", detail: ""};
+  const working = S.agents.find(a => a.enabled && /^working/.test(a.last_status || "") && a.last_seen_at && Date.now() - new Date(a.last_seen_at) < 3 * 3600e3);
+  if (working) return {cls: "on", text: "Agents are running", detail: working.name[0].toUpperCase() + working.name.slice(1) + " is working on: " + working.last_status.replace(/^working: /, "")};
+  const seen = S.agents.filter(a => a.last_seen_at).map(a => +new Date(a.last_seen_at));
+  const latest = seen.length ? Math.max(...seen) : 0;
+  if (latest && Date.now() - latest < 4 * 60e3) return {cls: "on", text: "Agents are running", detail: "Waiting for work on " + ((S.agents.find(a => a.last_host) || {}).last_host || "a laptop") + "."};
+  return {cls: "warn", text: "Agents are not running", detail: latest ? "Last seen " + when(latest) + ". No new clips will be made until they are started on a laptop." : "They have never run. Start them on a laptop to make clips."};
+}
+
 function render() {
-  const g = groups();
-  const counts = {review: g.review.length, launch: g.ready.length + g.submitNow.length, queue: S.jobs.length};
+  const g = groups(), cg = clipGroups(), toReview = cg.filter(c => c.waiting.length).length;
+  const counts = {review: toReview, post: g.ready.length + g.submitNow.length};
+  const primary = TABS.some(t => t[0] === tab) ? tab : "more";
   $("#nav").innerHTML = TABS.map(([id, label]) =>
-    `<button data-tab="${id}" class="${id === tab ? "on" : ""}">${label}${counts[id] ? `<span class="n ${id === "launch" && g.submitNow.length ? "hot" : ""}">${counts[id]}</span>` : ""}</button>`).join("");
-  $("#view").innerHTML = VIEWS[tab](g);
+    `<button data-tab="${id}" class="${id === primary ? "on" : ""}" ${id === primary ? 'aria-current="page"' : ""}>${label}${counts[id] ? `<span class="n ${id === "post" && g.submitNow.length ? "hot" : ""}">${counts[id]}</span>` : ""}</button>`).join("");
+  const st = agentStatus();
+  $("#agentDot").className = "dot " + st.cls; $("#agentLine").textContent = st.text;
+  const back = MORE.some(m => m[0] === tab) ? `<button class="back" data-tab="more">‹ More</button>` : "";
+  $("#view").innerHTML = back + VIEWS[tab](g, cg);
   if (tab === "review") loadVideos();
   if (tab === "style") drawPreview();
   tick();
@@ -226,102 +290,124 @@ function countdown(deadline) {
 function tick() { document.querySelectorAll("[data-deadline]").forEach(el => el.textContent = countdown(el.dataset.deadline)); }
 
 const VIEWS = {
-  overview(g) {
+  home(g, cg) {
+    const toReview = cg.filter(c => c.waiting.length), st = agentStatus();
+    const making = S.jobs.filter(j => ["analyze", "render"].includes(j.kind));
     const sum = k => S.posts.reduce((a, p) => a + Number(p[k] || 0), 0);
     const cam = S.campaigns.find(c => c.status === "active");
-    const snap = cam && S.snaps.find(s => s.campaign_id === cam.id);
     const days = cam && cam.closes_at ? Math.max(0, Math.ceil((new Date(cam.closes_at) - Date.now()) / 864e5)) : null;
-    return `<h1>Overview</h1>
-    ${g.submitNow.length ? `<div class="card stat alarm" style="margin-bottom:12px"><b>Submit now: ${g.submitNow.map(p => esc(p.slug)).join(", ")}</b><span>A published post is waiting for its campaign submission. Open the Launch tab.</span></div>` : ""}
+    const todo = [];
+    if (g.submitNow.length) todo.push(`<div class="todo urgent"><div class="big" data-deadline="${esc(g.submitNow[0].submit_deadline)}"></div>
+      <div class="what"><b>Submit your ${esc(PLATFORM[g.submitNow[0].platform] || g.submitNow[0].platform)} post to the campaign</b><span>It is public. It only earns if you submit before the clock runs out.</span></div>
+      <button class="b" data-tab="post">Submit now</button></div>`);
+    if (toReview.length) todo.push(`<div class="todo"><div class="big">${toReview.length}</div>
+      <div class="what"><b>${toReview.length === 1 ? "clip to review" : "clips to review"}</b><span>Watch each one, then approve or skip it.</span></div>
+      <button class="b" data-tab="review">Review</button></div>`);
+    if (g.ready.length) todo.push(`<div class="todo"><div class="big">${g.ready.length}</div>
+      <div class="what"><b>ready to post</b><span>Approved. Post one at a time and submit each straight away.</span></div>
+      <button class="b" data-tab="post">Post</button></div>`);
+    return `<h1>What needs you</h1>
+    ${todo.join("") || `<div class="todo"><div class="what"><b>You are all caught up</b><span>${making.length ? "The agents are making " + making.length + " more clip" + (making.length === 1 ? "" : "s") + "." : "Nothing is waiting for you."}</span></div>
+      <button class="b ghost" data-tab="make">Make clips</button></div>`}
+    <h2>Agents</h2>
+    <div class="todo"><span class="dot ${st.cls}" aria-hidden="true"></span><div class="what"><b>${esc(st.text)}</b><span>${esc(st.detail)}</span></div>
+      <button class="b ghost" data-tab="agents">Details</button></div>
+    ${making.length ? `<div class="card small"><b>In the works</b><ul style="margin:6px 0 0;padding-left:18px">${making.slice(0, 4).map(j => `<li>${esc(j.title)}</li>`).join("")}${making.length > 4 ? `<li class="mute">and ${making.length - 4} more</li>` : ""}</ul></div>` : ""}
+    <h2>So far</h2>
     <div class="grid">
-      <div class="card stat"><b>${g.review.length}</b><span>waiting for review</span></div>
-      <div class="card stat"><b>${g.ready.length}</b><span>approved, ready to publish</span></div>
-      <div class="card stat ${g.submitNow.length ? "alarm" : ""}"><b>${g.submitNow.length}</b><span>published, not yet submitted</span></div>
-      <div class="card stat"><b>${g.submitted.length}</b><span>submitted to a campaign</span></div>
-      <div class="card stat"><b>${g.missed.length}</b><span>missed the submission window</span></div>
-      <div class="card stat"><b>${S.jobs.length}</b><span>open jobs in the queue</span></div>
-    </div>
-    <h2>Money</h2>
-    <div class="grid">
-      <div class="card stat"><b>${money(sum("est_after_fee_usd"))}</b><span>estimate after fee, from campaign-reported eligible views only</span></div>
+      <div class="card stat"><b>${g.submitted.length}</b><span>posts submitted to a campaign</span></div>
       <div class="card stat"><b>${money(sum("approved_usd"))}</b><span>approved by campaigns</span></div>
-      <div class="card stat"><b>${money(sum("paid_usd"))}</b><span>cash received</span></div>
-      <div class="card stat"><b>${money(sum("cost_usd"))}</b><span>production cost</span></div>
+      <div class="card stat"><b>${money(sum("paid_usd"))}</b><span>received</span></div>
+      ${cam ? `<div class="card stat"><b>${days ?? "—"}</b><span>days left in ${esc(cam.name)}</span></div>` : ""}
     </div>
-    ${cam ? `<h2>${esc(cam.name)}</h2><div class="grid">
-      <div class="card stat"><b>${snap ? money(snap.remaining_budget_usd) : "—"}</b><span>campaign budget left${snap ? ", seen " + when(snap.at) : ""}</span></div>
-      <div class="card stat"><b>${days ?? "—"}</b><span>days until the campaign closes</span></div>
-      <div class="card stat"><b>$${Number(cam.rate_usd_per_1000)}</b><span>per 1,000 eligible views, ${num(cam.min_eligible_views)} minimum, $${Number(cam.cap_gross_usd)} cap</span></div>
-      <div class="card stat"><b>${cam.submit_window_minutes} min</b><span>to submit after publishing</span></div></div>` : ""}`;
+    ${g.missed.length ? `<p class="small mute">${g.missed.length} post${g.missed.length === 1 ? "" : "s"} missed the submission window and cannot earn. Details are under Post.</p>` : ""}`;
   },
 
-  review(g) {
-    const list = [...g.review, ...g.ready];
-    if (!list.length) return `<h1>Review</h1><p class="card mute">Nothing is waiting. Clips appear here when the Editor agent finishes one.</p>${addSource()}`;
-    return `<h1>Review</h1>` + list.map(p => `
-      <div class="card" style="margin-bottom:12px"><div class="row">
-        <div><video controls playsinline preload="metadata" data-media="${esc(p.media_path || "")}"></video>
-          <div class="small mute" data-medianote></div></div>
-        <div class="grow">
-          <div><span class="tag ${p.state === "approved" ? "ok" : "warn"}">${esc(p.state.replace("_", " "))}</span>
-            <b>${esc(p.platform)}</b> · ${esc(p.account || "no account")} · <span class="mono">${esc(p.slug)}</span></div>
-          <div class="small mute">${esc(p.campaign_name)} · ${p.duration_seconds ? Number(p.duration_seconds).toFixed(1) + "s" : ""} · approvals ${p.approvals} of ${p.approvals_required}</div>
-          <label>Caption</label><textarea data-caption="${esc(p.clip)}" ${p.state === "approved" ? "readonly" : ""}>${esc(p.caption)}</textarea>
-          ${(p.caption_missing || []).length ? `<p class="small" style="color:var(--red)">Caption is missing: ${p.caption_missing.map(esc).join(", ")}</p>` : ""}
-          ${(() => { const rj = S.jobs.find(j => j.kind === "review" && j.payload && j.payload.clip === p.clip), q = rj && rj.payload.quality;
-              return q && (q.warnings || []).length ? `<p class="small" style="color:var(--gold)">Check before approving: ${q.warnings.map(esc).join("; ")}</p>` : ""; })()}
-          <p class="small mute">Watch the whole clip and check the captions against what is said before approving. The transcript is machine-made.</p>
-          ${p.state === "approved" ? `<p class="small">Approved. Publish it from the Launch tab.</p>` : `
-          <button class="b ghost" data-act="saveCaption" data-clip="${esc(p.clip)}">Save caption</button>
-          <button class="b" data-act="approve" data-slug="${esc(p.slug)}" ${me.kind !== "human" ? "disabled" : ""}>Approve this file</button>
-          <button class="b ghost" data-act="revise" data-slug="${esc(p.slug)}">Send back</button>
-          <button class="b ghost" data-act="openRedo" data-clip="${esc(p.clip)}">Fix on-screen captions / restyle</button>`}
-          <div data-redo="${esc(p.clip)}"></div>
-        </div></div></div>`).join("") + addSource();
+  review(g, cg) {
+    const waiting = cg.filter(c => c.waiting.length), done = cg.filter(c => !c.waiting.length);
+    if (!waiting.length && !done.length) return `<h1>Review</h1><div class="todo"><div class="what"><b>No clips to review</b><span>New clips appear here when the agents finish one.</span></div><button class="b ghost" data-tab="make">Make clips</button></div>`;
+    const card = c => {
+      const p = c.first, warn = warningsFor(c.clip), bad = warn.filter(serious), mild = warn.filter(w => !serious(w));
+      const missing = [...new Set(c.posts.flatMap(x => x.caption_missing || []))];
+      const job = reviewJob(c.clip), hook = job && job.title.includes(": ") ? job.title.slice(job.title.indexOf(": ") + 2) : "";
+      const approved = !c.waiting.length;
+      return `<div class="card" style="margin-bottom:14px"><div class="clip">
+        <div><video controls playsinline preload="metadata" data-media="${esc(p.media_path || "")}"></video><div class="small mute" data-medianote></div></div>
+        <div>
+          ${hook ? `<b style="font-size:17px">${esc(hook)}</b>` : ""}
+          <div class="small mute" style="margin:2px 0 8px">${p.duration_seconds ? Math.round(p.duration_seconds) + " seconds · " : ""}${esc(p.campaign_name)}</div>
+          <div>${c.posts.map(x => `<span class="chip ${x.state === "approved" ? "ok" : "wait"}">${esc(PLATFORM[x.platform] || x.platform)} · ${x.state === "approved" ? "approved" : "waiting"}</span>`).join("")}</div>
+          ${bad.length ? `<div class="callout danger"><b>Think twice before posting this</b><ul>${bad.map(w => `<li>${esc(w)}</li>`).join("")}</ul></div>` : ""}
+          ${mild.length ? `<div class="callout"><b>Check before approving</b><ul>${mild.map(w => `<li>${esc(w)}</li>`).join("")}</ul></div>` : ""}
+          <label for="cap-${esc(c.clip)}">Post caption</label>
+          <textarea id="cap-${esc(c.clip)}" data-caption="${esc(c.clip)}" ${approved ? "readonly" : ""}>${esc(p.caption)}</textarea>
+          ${missing.length ? `<p class="small" style="color:var(--red);margin:6px 0 0">The campaign requires this text in the caption: ${missing.map(esc).join(", ")}</p>` : ""}
+          ${approved ? `<div class="actions"><span class="small">Approved for every platform.</span><button class="b" data-tab="post">Go to Post</button></div>` : `
+          <div class="actions">
+            <button class="b big" data-act="approveClip" data-clip="${esc(c.clip)}" ${me.kind !== "human" || missing.length ? "disabled" : ""}>Approve</button>
+            <button class="b ghost" data-act="saveCaption" data-clip="${esc(c.clip)}">Save caption</button>
+            <button class="b ghost" data-act="openRedo" data-clip="${esc(c.clip)}">Fix on-screen words or look</button>
+            <button class="b danger-ghost" data-act="skipClip" data-clip="${esc(c.clip)}">Skip this clip</button>
+          </div>
+          <p class="small mute" style="margin-bottom:0">Watch it to the end first. The on-screen words are machine-made and can be wrong.</p>`}
+          <div data-redo="${esc(c.clip)}"></div>
+        </div></div></div>`;
+    };
+    return `<h1>Review</h1>${waiting.length ? `<p class="lede">${waiting.length} ${waiting.length === 1 ? "clip is" : "clips are"} waiting. Approve the ones worth posting and skip the rest.</p>` : ""}
+      ${waiting.map(card).join("")}${done.length ? `<h2>Approved, not posted yet</h2>${done.map(card).join("")}` : ""}`;
   },
 
-  launch(g) {
-    const busy = g.submitNow[0];
-    let html = `<h1>Launch</h1><p class="small mute">One platform at a time: publish, submit to the campaign, record the receipt, then the next. You click publish and submit yourself, in the official screens.</p>`;
+  post(g) {
+    const busy = g.submitNow[0], plat = p => esc(PLATFORM[p.platform] || p.platform);
+    let html = `<h1>Post</h1><p class="lede">One at a time: post it, submit it to the campaign, record the receipt. Then the next one.</p>`;
     html += g.submitNow.map(p => {
       const cam = S.campaigns.find(c => c.slug === p.campaign) || {};
-      return `<div class="card" style="border-color:var(--red);margin-bottom:12px">
+      return `<div class="card" style="border-color:var(--red);margin-bottom:14px">
         <div class="row"><div><div class="small mute">Time left to submit</div><div class="count" data-deadline="${esc(p.submit_deadline)}"></div></div>
-        <div class="grow"><b>${esc(p.platform)} · ${esc(p.slug)}</b>
-          <div class="small">Published ${when(p.published_at)} · <a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">public post</a></div>
+        <div class="grow"><b style="font-size:17px">Submit your ${plat(p)} post to the campaign</b>
+          <div class="small mute">Posted ${when(p.published_at)} · <a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">see the post</a></div>
           <ol class="steps">
-            <li><button class="b ghost" data-act="copy" data-text="${esc(p.published_url)}">Copy post link</button></li>
-            <li><a class="b" href="${safeUrl(cam.campaign_url)}" target="_blank" rel="noopener">Open campaign submission page</a></li>
-            <li><label>Receipt or submission ID shown after you submit</label><input data-receipt="${esc(p.slug)}" placeholder="Paste the receipt">
-              <p><button class="b" data-act="submitted" data-slug="${esc(p.slug)}">Record receipt</button></p></li>
+            <li><button class="b ghost" data-act="copy" data-text="${esc(p.published_url)}">Copy the post link</button></li>
+            <li><a class="b" href="${safeUrl(cam.campaign_url)}" target="_blank" rel="noopener">Open the campaign page</a> <span class="small mute">Paste the link there and submit.</span></li>
+            <li><label for="rc-${esc(p.slug)}">The receipt or submission ID the campaign shows you</label><input id="rc-${esc(p.slug)}" data-receipt="${esc(p.slug)}" placeholder="Paste it here">
+              <div class="actions"><button class="b big" data-act="submitted" data-slug="${esc(p.slug)}">Done, I submitted it</button></div></li>
           </ol></div></div></div>`;
     }).join("");
-    html += g.ready.map(p => `<div class="card" style="margin-bottom:12px">
-        <b>${esc(p.platform)} · ${esc(p.account || "")} · <span class="mono">${esc(p.slug)}</span></b>
-        ${busy ? `<p class="small" style="color:var(--gold)">Submit ${esc(busy.slug)} first. Publishing this now would start a second 30-minute clock.</p>` : ""}
+    html += g.ready.map(p => `<div class="card" style="margin-bottom:14px">
+        <b style="font-size:17px">Post to ${plat(p)}</b> <span class="small mute">${esc(p.account || "")}</span>
+        ${busy ? `<div class="callout"><b>Finish the ${plat(busy)} submission first</b>Posting this now would start a second 30-minute clock.</div>` : ""}
         <ol class="steps">
-          <li><button class="b ghost" data-act="copy" data-text="${esc(p.caption)}">Copy caption</button>
-              ${p.platform_title ? `<button class="b ghost" data-act="copy" data-text="${esc(p.platform_title)}">Copy title</button>` : ""}
-              <div class="small mute">${esc(p.caption)}</div></li>
-          <li>Have the campaign submission page open in another tab before you publish.</li>
+          <li><button class="b ghost" data-act="copy" data-text="${esc(p.caption)}">Copy the caption</button>
+              ${p.platform_title ? `<button class="b ghost" data-act="copy" data-text="${esc(p.platform_title)}">Copy the title</button>` : ""}
+              <div class="small mute" style="margin-top:6px">${esc(p.caption)}</div></li>
           <li>${canShareFiles ? `<button class="b ghost" data-act="prepVideo" data-path="${esc(p.media_path || "")}" data-slug="${esc(p.slug)}">Get the video ready</button>
-              <button class="b" data-act="shareVideo" data-path="${esc(p.media_path || "")}" data-caption="${esc(p.caption)}" data-ready="${esc(p.slug)}" disabled>Share to the ${esc(p.platform)} app</button>
-              <div class="small mute">On your phone: tap the first button, wait for it to finish, then share straight into the ${esc(p.platform)} app. The caption is copied for you to paste. Turn on the paid-promotion label before posting.</div>`
+              <button class="b" data-act="shareVideo" data-path="${esc(p.media_path || "")}" data-caption="${esc(p.caption)}" data-ready="${esc(p.slug)}" disabled>Share to the ${plat(p)} app</button>
+              <div class="small mute" style="margin-top:6px">Tap the first button and wait, then share into the ${plat(p)} app. Paste the caption and switch on the paid-promotion label before you post.</div>`
             : `<button class="b ghost" data-act="downloadVideo" data-path="${esc(p.media_path || "")}">Download the video</button>
-              <a class="b ghost" href="${UPLOAD[p.platform] || "#"}" target="_blank" rel="noopener">Open ${esc(p.platform)} upload</a>
-              <div class="small mute">Upload the approved file and turn on the paid-promotion disclosure.</div>`}</li>
-          <li><label>Public link of the post, once it is live</label><input data-puburl="${esc(p.slug)}" placeholder="https://…">
-              <p><button class="b" data-act="published" data-slug="${esc(p.slug)}" ${busy || me.kind !== "human" ? "disabled" : ""}>It is public now: start the clock</button></p></li>
+              <a class="b ghost" href="${UPLOAD[p.platform] || "#"}" target="_blank" rel="noopener">Open ${plat(p)} upload</a>
+              <div class="small mute" style="margin-top:6px">Upload the file, paste the caption and switch on the paid-promotion label.</div>`}</li>
+          <li><label for="pu-${esc(p.slug)}">Once it is live, paste the link to your post</label><input id="pu-${esc(p.slug)}" data-puburl="${esc(p.slug)}" placeholder="https://…" inputmode="url">
+              <div class="actions"><button class="b big" data-act="published" data-slug="${esc(p.slug)}" ${busy || me.kind !== "human" ? "disabled" : ""}>It is live</button></div>
+              <div class="small mute">This starts the campaign's ${esc(String((S.campaigns.find(c => c.slug === p.campaign) || {}).submit_window_minutes || 30))}-minute submission clock.</div></li>
         </ol></div>`).join("");
-    if (!g.submitNow.length && !g.ready.length) html += `<p class="card mute">Nothing is approved for publishing.</p>`;
-    if (g.missed.length) html += `<h2>Missed window</h2>` + g.missed.map(p => `<div class="card small" style="margin-bottom:8px"><b>${esc(p.slug)}</b> was published ${when(p.published_at)} and never submitted. Window closed ${when(p.submit_deadline)}. Not eligible without the organizer's written exception.</div>`).join("");
+    if (!g.submitNow.length && !g.ready.length) html += `<div class="todo"><div class="what"><b>Nothing to post yet</b><span>Clips show up here after you approve them in Review.</span></div><button class="b ghost" data-tab="review">Review</button></div>`;
+    if (g.missed.length) html += `<h2>Missed the submission window</h2>` + g.missed.map(p => `<div class="card small" style="margin-bottom:8px">Your <b>${plat(p)}</b> post from ${when(p.published_at)} was never submitted. The window closed ${when(p.submit_deadline)}, so it cannot earn unless the organizer agrees in writing. <a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">See the post</a></div>`).join("");
     return html;
+  },
+
+  more() {
+    return `<h1>More</h1><div class="menu">${MORE.map(([id, label, what]) => `<button data-tab="${id}"><span><b>${esc(label)}</b><span class="d">${esc(what)}</span></span><span class="go" aria-hidden="true">›</span></button>`).join("")}</div>
+      <div class="actions" style="margin-top:22px"><span class="small mute">Signed in as ${esc(me.display_name)}</span><button class="b ghost" data-act="refresh">Refresh</button><button class="b ghost" data-act="signOut">Sign out</button></div>`;
+  },
+
+  make() {
+    return `<h1>Make clips</h1><p class="lede">The agents also find new streams and clips by themselves for every streamer listed under a campaign. Use this to hand them something specific.</p>` + (addSource() || `<div class="todo"><div class="what"><b>No streamers yet</b><span>Add a campaign and the streamers it lets you clip first.</span></div><button class="b" data-tab="campaigns">Campaigns</button></div>`);
   },
 
   style() {
     const st = S.style || STYLE_DEFAULT, opt = (v, cur, label) => `<option value="${esc(v)}" ${String(v) === String(cur) ? "selected" : ""}>${esc(label || v)}</option>`;
     const check = (key, label) => `<label class="check"><input type="checkbox" data-style="${key}" ${st[key] ? "checked" : ""}> ${label}</label>`;
-    return `<h1>Style</h1><p class="small mute">The look of every new clip, for both partners. To apply it to a clip that already exists, use "Fix on-screen captions / restyle" on that clip in Review.</p>
+    return `<h1>Caption style</h1><p class="lede">The look of every new clip, for both of you. To change a clip that already exists, use "Fix on-screen words or look" on it in Review.</p>
     <div class="row"><div class="grow card">
       <div class="row">
         <div class="field"><label>Caption font</label><select data-style="font">${Object.keys(FONT_CSS).map(f => opt(f, st.font)).join("")}</select></div>
@@ -351,7 +437,7 @@ const VIEWS = {
   },
 
   queue() {
-    return `<h1>Queue</h1><p><button class="b" data-act="claim">Take the next job</button></p>
+    return `<h1>To-do list</h1><p class="lede">Jobs for the two of you and for the agents. Agents take the clip jobs on their own.</p><p><button class="b" data-act="claim">Take the next job</button></p>
     <div class="card tablewrap"><table><tr><th>Job</th><th>Kind</th><th>Due</th><th>Who</th><th></th></tr>
     ${S.jobs.map(j => `<tr><td>${esc(j.title)}${j.payload && j.payload.note ? `<div class="small mute">${esc(j.payload.note)}</div>` : ""}</td>
       <td><span class="tag">${esc(j.kind)}</span></td><td class="small">${when(j.due_at)}</td>
@@ -364,7 +450,7 @@ const VIEWS = {
   },
 
   agents() {
-    return `<h1>Agents</h1><p class="small mute">Agents run on a partner's own machine. They prepare clips and record public view counts. They cannot approve, publish or submit.</p>` +
+    return `<h1>Agents</h1><p class="lede">Agents run on one of your laptops. They find and make clips. They cannot approve, post or submit; that stays with you.</p>` +
     S.agents.map(a => {
       const seen = a.last_seen_at ? (Date.now() - new Date(a.last_seen_at)) / 60000 : null;
       const health = !a.enabled ? ["off", ""] : seen == null ? ["never run", "warn"] : seen < 30 ? ["running", "ok"] : ["not seen for " + Math.round(seen / 60) + "h", "warn"];
@@ -374,7 +460,7 @@ const VIEWS = {
         <div class="small mute">${a.last_seen_at ? "Last seen " + when(a.last_seen_at) + " on " + esc(a.last_host) + " · " + esc(a.last_status) : "Has not run yet"}</div>
         ${a.last_error ? `<div class="small" style="color:var(--gold)">Last note: ${esc(a.last_error)}</div>` : ""}</div>
         <div><button class="b ${a.enabled ? "ghost" : ""} switch" data-act="toggleAgent" data-name="${esc(a.name)}" data-on="${a.enabled ? 0 : 1}">${a.enabled ? "Turn off" : "Turn on"}</button></div></div></div>`;
-    }).join("") + addSource();
+    }).join("");
   },
 
   campaigns() {
@@ -434,7 +520,7 @@ const VIEWS = {
   earnings() {
     return `<h1>Earnings</h1><div class="card tablewrap"><table>
       <tr><th>Post</th><th>State</th><th>Views</th><th>Eligible views</th><th>Estimate after fee</th><th>Approved</th><th>Paid</th></tr>
-      ${S.posts.filter(p => p.published_at).map(p => `<tr><td><a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">${esc(p.slug)}</a><div class="small mute">published ${when(p.published_at)}</div></td>
+      ${S.posts.filter(p => p.published_at).map(p => `<tr><td><a href="${safeUrl(p.published_url)}" target="_blank" rel="noopener">${esc(PLATFORM[p.platform] || p.platform)} post</a><div class="small mute">posted ${when(p.published_at)}</div></td>
         <td>${p.window_missed ? `<span class="tag bad">missed window</span>` : `<span class="tag">${esc(p.state)}</span>`}${p.submission_id ? `<div class="mono mute">${esc(p.submission_id)}</div>` : ""}</td>
         <td>${num(p.views)}</td><td>${num(p.eligible_views)}</td><td>${money(p.est_after_fee_usd)}</td><td>${money(p.approved_usd)}</td><td>${money(p.paid_usd)}</td></tr>`).join("") || `<tr><td colspan="7" class="mute">No published posts.</td></tr>`}
     </table></div><p class="small mute">A dash means nothing has been recorded. Public views never produce an estimate; only eligible views reported by the campaign do.</p>`;
@@ -474,13 +560,13 @@ document.addEventListener("input", e => { if (e.target.matches("[data-style]")) 
 
 function addSource() {
   if (!S.channels.length) return "";
-  return `<h2>Make clips from a link</h2><div class="card"><div class="row">
+  return `<div class="card"><div class="row">
     <div class="grow"><label>Link (Kick, Twitch or YouTube)</label><input id="srcUrl" placeholder="https://…"></div>
     <div style="width:190px"><label>This link is</label><select id="srcKind"><option value="clip">one short clip</option><option value="stream">a full stream recording</option></select></div>
     <div style="width:150px"><label>Streamer</label><select id="srcChannel">${S.channels.map(c => `<option value="${c.id}">${esc(c.slug)}</option>`).join("")}</select></div>
     <div style="width:120px"><label>Clips to make</label><select id="srcClips"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>8</option></select></div>
     </div><p><button class="b" data-act="addSource">Queue it</button></p>
-    <label>Or upload a video from this device (up to 50 MB)</label>
+    <label for="srcFile">Or upload a video from this device (up to 50 MB)</label>
     <input type="file" id="srcFile" accept="video/*">
     <p><button class="b ghost" data-act="uploadSource">Upload and queue it</button> <span class="small mute" id="uploadMsg"></span></p>
     <p class="small mute">A clip goes straight to the Editor. For a full stream, the Spotter first finds its loudest separate moments (plus chat spikes on YouTube) and the Editor cuts each one; "Clips to make" applies to streams. Loud is not always good: every result still waits here for your review. Only streamers a partner has authorized are listed, and an agent laptop must be running.</p></div>`;
@@ -500,7 +586,30 @@ async function loadVideos() {
 }
 
 const ACTIONS = {
-  async approve(d) { await call(db.rpc("review_post", {p_slug: d.slug, p_decision: "approve"}), "Approved " + d.slug); },
+  async approve(d) { await call(db.rpc("review_post", {p_slug: d.slug, p_decision: "approve"}), "Approved"); },
+  async approveClip(d) {
+    const group = clipGroups().find(c => c.clip === d.clip); if (!group) return;
+    const box = $(`[data-caption="${CSS.escape(d.clip)}"]`);
+    if (box && box.value !== group.first.caption) {                 // an edited caption is saved before it is approved
+      const saved = await db.from("clips").update({caption: box.value}).eq("short_id", d.clip);
+      if (saved.error) return toast(saved.error.message, true);
+    }
+    for (const p of group.waiting) {
+      const {error} = await db.rpc("review_post", {p_slug: p.slug, p_decision: "approve"});
+      if (error) { toast(error.message, true); return load(); }
+    }
+    toast("Approved. It is ready under Post."); await load();
+  },
+  async skipClip(d) {
+    const group = clipGroups().find(c => c.clip === d.clip); if (!group) return;
+    if (!confirm("Skip this clip? It leaves Review and will not be posted.")) return;
+    const {error} = await db.from("posts").update({state: "withdrawn"}).in("slug", group.posts.map(p => p.slug));
+    if (error) return toast(error.message, true);
+    await db.from("jobs").update({state: "cancelled"}).eq("kind", "review").eq("state", "queued").contains("payload", {clip: d.clip});
+    toast("Skipped"); await load();
+  },
+  refresh() { load().then(() => toast("Up to date")); },
+  async signOut() { await db.auth.signOut(); location.reload(); },
   async revise(d) { const note = prompt("What needs to change?"); if (note) await call(db.rpc("review_post", {p_slug: d.slug, p_decision: "revise", p_note: note}), "Sent back"); },
   async saveCaption(d) { const text = $(`[data-caption="${CSS.escape(d.clip)}"]`).value; await call(db.from("clips").update({caption: text}).eq("short_id", d.clip), "Caption saved"); },
   async copy(d) { try { await navigator.clipboard.writeText(d.text); toast("Copied"); } catch { toast("Copy failed; select the text by hand", true); } },
@@ -508,7 +617,7 @@ const ACTIONS = {
     const url = $(`[data-puburl="${CSS.escape(d.slug)}"]`).value.trim();
     if (!/^https:\/\//.test(url)) return toast("Paste the public https:// link of the live post first", true);
     if (!confirm("Is this post public right now?\n\n" + url + "\n\nThis starts the submission clock.")) return;
-    if (await call(db.rpc("record_published", {p_slug: d.slug, p_url: url, p_at: new Date().toISOString()}), "Clock started. Submit it to the campaign now.")) { tab = "launch"; render(); }
+    if (await call(db.rpc("record_published", {p_slug: d.slug, p_url: url, p_at: new Date().toISOString()}), "Clock started. Submit it to the campaign now.")) { tab = "post"; render(); }
   },
   async submitted(d) {
     const receipt = $(`[data-receipt="${CSS.escape(d.slug)}"]`).value.trim();
@@ -647,11 +756,9 @@ const ACTIONS = {
 };
 
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-tab]"); if (t) { tab = t.dataset.tab; render(); return; }
+  const t = e.target.closest("[data-tab]"); if (t) { tab = t.dataset.tab; redoOpen = false; render(); window.scrollTo(0, 0); return; }
   const a = e.target.closest("[data-act]"); if (a && !a.disabled) ACTIONS[a.dataset.act](a.dataset);
 });
-$("#refresh").onclick = load;
-$("#signout").onclick = async () => { await db.auth.signOut(); location.reload(); };
 $("#loginForm").onsubmit = async e => {
   e.preventDefault(); $("#loginMsg").textContent = "Signing in…";
   const {data, error} = await db.auth.signInWithPassword({email: $("#email").value.trim(), password: $("#password").value});

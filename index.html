@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0d1f24">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Leonida">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Leonida Uncut</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -64,6 +71,24 @@ th{color:var(--mute);font-weight:600;font-size:12.5px}
 .phone .cap{position:absolute;left:0;right:0;text-align:center;transform:translateY(-50%);line-height:1.1;paint-order:stroke fill;white-space:nowrap}
 .field{min-width:150px;flex:1}
 .check{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}.check input{width:auto}
+header{padding-top:env(safe-area-inset-top)}
+main{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+@media (max-width:640px){
+  body{font-size:16px}
+  h1{font-size:22px}
+  .bar{padding:10px 12px}.bar #fresh{display:none}
+  main{padding:14px 12px calc(80px + env(safe-area-inset-bottom))}
+  .card{padding:12px 13px}
+  button.b,a.b{padding:12px 16px;font-size:16px}                 /* thumb-sized */
+  input,textarea,select{font-size:16px;padding:11px 12px}        /* 16px stops iOS zooming in on focus */
+  video{width:100%;max-height:70vh}
+  .row{gap:10px}.grow,.field{min-width:100%}
+  .row > div[style*="width:"]{width:100% !important}
+  .count{font-size:56px}
+  th,td{padding:7px 6px}
+  .phone{margin:auto}
+  #toast{bottom:calc(16px + env(safe-area-inset-bottom));width:92vw;text-align:center}
+}
 </style>
 </head>
 <body>
@@ -110,6 +135,8 @@ const STYLE_DEFAULT = {font: "Anton", size: 112, color: "#FFFFFF", highlight: "#
   stroke_width: 0.10, uppercase: true, max_words: 3, position: "seam", webcam_share: 0.36, show_disclosure: true, mask_strong_language: false};
 const FONT_CSS = {"Anton": "Anton", "Bangers": "Bangers", "Bebas Neue": "'Bebas Neue'", "Poppins": "Poppins", "Luckiest Guy": "'Luckiest Guy'"};
 let redoOpen = false;
+const canShareFiles = (() => { try { return !!navigator.canShare && navigator.canShare({files: [new File([""], "a.mp4", {type: "video/mp4"})]}); } catch { return false; } })();
+const videoFiles = {};          // storage path -> File, fetched ahead so sharing happens on the tap itself
 const UPLOAD = {youtube: "https://studio.youtube.com/", tiktok: "https://www.tiktok.com/tiktokstudio/upload"};
 let db, me = null, tab = "overview", S = {posts: [], jobs: [], agents: [], campaigns: [], snaps: [], events: [], partners: [], channels: [], style: null};
 const videoUrls = {};
@@ -277,8 +304,12 @@ const VIEWS = {
               ${p.platform_title ? `<button class="b ghost" data-act="copy" data-text="${esc(p.platform_title)}">Copy title</button>` : ""}
               <div class="small mute">${esc(p.caption)}</div></li>
           <li>Have the campaign submission page open in another tab before you publish.</li>
-          <li><a class="b ghost" href="${UPLOAD[p.platform] || "#"}" target="_blank" rel="noopener">Open ${esc(p.platform)} upload</a>
-              <span class="small mute">Upload the approved file and turn on the paid-promotion disclosure.</span></li>
+          <li>${canShareFiles ? `<button class="b ghost" data-act="prepVideo" data-path="${esc(p.media_path || "")}" data-slug="${esc(p.slug)}">Get the video ready</button>
+              <button class="b" data-act="shareVideo" data-path="${esc(p.media_path || "")}" data-caption="${esc(p.caption)}" data-ready="${esc(p.slug)}" disabled>Share to the ${esc(p.platform)} app</button>
+              <div class="small mute">On your phone: tap the first button, wait for it to finish, then share straight into the ${esc(p.platform)} app. The caption is copied for you to paste. Turn on the paid-promotion label before posting.</div>`
+            : `<button class="b ghost" data-act="downloadVideo" data-path="${esc(p.media_path || "")}">Download the video</button>
+              <a class="b ghost" href="${UPLOAD[p.platform] || "#"}" target="_blank" rel="noopener">Open ${esc(p.platform)} upload</a>
+              <div class="small mute">Upload the approved file and turn on the paid-promotion disclosure.</div>`}</li>
           <li><label>Public link of the post, once it is live</label><input data-puburl="${esc(p.slug)}" placeholder="https://…">
               <p><button class="b" data-act="published" data-slug="${esc(p.slug)}" ${busy || me.kind !== "human" ? "disabled" : ""}>It is public now: start the clock</button></p></li>
         </ol></div>`).join("");
@@ -449,6 +480,9 @@ function addSource() {
     <div style="width:150px"><label>Streamer</label><select id="srcChannel">${S.channels.map(c => `<option value="${c.id}">${esc(c.slug)}</option>`).join("")}</select></div>
     <div style="width:120px"><label>Clips to make</label><select id="srcClips"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>8</option></select></div>
     </div><p><button class="b" data-act="addSource">Queue it</button></p>
+    <label>Or upload a video from this device (up to 50 MB)</label>
+    <input type="file" id="srcFile" accept="video/*">
+    <p><button class="b ghost" data-act="uploadSource">Upload and queue it</button> <span class="small mute" id="uploadMsg"></span></p>
     <p class="small mute">A clip goes straight to the Editor. For a full stream, the Spotter first finds its loudest separate moments (plus chat spikes on YouTube) and the Editor cuts each one; "Clips to make" applies to streams. Loud is not always good: every result still waits here for your review. Only streamers a partner has authorized are listed, and an agent laptop must be running.</p></div>`;
 }
 
@@ -521,6 +555,44 @@ const ACTIONS = {
     if (slugs.length) await db.from("posts").update({state: "withdrawn"}).in("slug", slugs);
     await db.from("jobs").update({state: "cancelled"}).eq("kind", "review").eq("state", "queued").contains("payload", {clip: clip.short_id});
     redoOpen = false; toast("Queued. The new version will appear in Review."); await load();
+  },
+  async prepVideo(d) {
+    if (!d.path.startsWith("masters/")) return toast("This clip's file is not in shared storage", true);
+    toast("Getting the video ready…");
+    const {data, error} = await db.storage.from("masters").download(d.path.slice(8));
+    if (error) return toast(error.message, true);
+    videoFiles[d.path] = new File([data], "leonida-" + d.slug + ".mp4", {type: "video/mp4"});
+    document.querySelectorAll(`[data-ready="${CSS.escape(d.slug)}"]`).forEach(b => b.disabled = false);
+    toast("Ready. Tap Share.");
+  },
+  shareVideo(d) {                                         // no awaits before share(): phones require it on the tap
+    const file = videoFiles[d.path];
+    if (!file) return toast("Tap 'Get the video ready' first", true);
+    navigator.clipboard && navigator.clipboard.writeText(d.caption || "").catch(() => {});
+    navigator.share({files: [file]}).then(() => toast("Shared. Paste the caption, post, then paste the public link below."))
+      .catch(e => { if (e.name !== "AbortError") toast("Sharing failed: " + e.message, true); });
+  },
+  async downloadVideo(d) {
+    if (!d.path.startsWith("masters/")) return toast("This clip's file is not in shared storage", true);
+    const {data, error} = await db.storage.from("masters").createSignedUrl(d.path.slice(8), 600, {download: true});
+    if (error) return toast(error.message, true);
+    location.href = data.signedUrl;
+  },
+  async uploadSource() {
+    const file = $("#srcFile").files[0], ch = S.channels.find(c => c.id === $("#srcChannel").value), msg = $("#uploadMsg");
+    if (!file || !ch) return toast("Choose a video file and a streamer", true);
+    if (file.size > 50 * 1024 * 1024) return toast("That file is " + Math.round(file.size / 1048576) + " MB. Free storage takes up to 50 MB per file.", true);
+    if (!file.type.startsWith("video/")) return toast("That is not a video file", true);
+    const safe = file.name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(-60), path = crypto.randomUUID() + "/" + safe;
+    msg.textContent = "Uploading…";
+    const up = await db.storage.from("uploads").upload(path, file, {contentType: file.type});
+    if (up.error) { msg.textContent = ""; return toast(up.error.message, true); }
+    const {data, error} = await db.from("sources").insert({campaign_id: ch.campaign_id, channel_id: ch.id, creator: ch.slug, title: file.name.slice(0, 120),
+      permission_basis: ch.permission_basis, status: "queued", note: "uploaded from a partner's device"}).select().single();
+    if (error) { msg.textContent = ""; return toast(error.message, true); }
+    msg.textContent = "";
+    await call(db.from("jobs").insert({kind: "render", source_id: data.id, priority: 61, title: "Edit uploaded " + ch.slug + " video: " + file.name.slice(0, 60),
+      payload: {source_id: data.id, storage: "uploads/" + path}}), "Uploaded and queued for the Editor");
   },
   async claim() { const jobs = await call(db.rpc("claim_job", {p_agent: "human"})); if (jobs && !jobs.length) toast("Nothing to take"); },
   async done(d) { await call(db.rpc("finish_job", {p_id: d.id, p_ok: true}), "Done"); },
@@ -596,6 +668,7 @@ $("#signup").onclick = async () => {
   if (data.session) { enter(data.session); return; }
   $("#loginMsg").textContent = "Check your inbox for a confirmation email from Supabase and click its link. Then come back here and sign in.";
 };
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 start();
 </script>
 </body>

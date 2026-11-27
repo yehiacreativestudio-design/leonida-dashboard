@@ -206,7 +206,7 @@ async function enter(session) {
   }
   me = rows[0];
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
-  $("#whoami").textContent = me.display_name;
+  $("#view").innerHTML = `<p class="lede" style="margin-top:18px">Loading your clips…</p>`;
   await load();
   setInterval(() => { if (document.visibilityState === "visible" && tab !== "style" && !redoOpen && !document.activeElement.matches("input,textarea,select")) load(); }, 20000);
   setInterval(tick, 1000);
@@ -224,14 +224,25 @@ async function load() {
     db.from("channels").select("*").eq("active", true),
     db.from("settings").select("value").eq("key", "style"),
   ];
-  const r = await Promise.all(q);
+  let r;
+  try { r = await Promise.all(q); }
+  catch (e) { return loadFailed("Could not reach the database. Check your connection."); }
   const bad = r.find(x => x.error);
-  if (bad) { toast(bad.error.message, true); return; }
+  if (bad) return loadFailed(bad.error.message);
   [S.posts, S.jobs, S.agents, S.campaigns, S.snaps, S.events, S.partners, S.channels] = r.map(x => x.data);
   S.style = Object.assign({}, STYLE_DEFAULT, (r[8].data[0] || {}).value || {});
   $("#fresh").textContent = "Updated " + new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
   render();
 }
+
+function loadFailed(message) {
+  toast(message, true);
+  if (!S.posts.length && !S.agents.length)               // nothing on screen yet: say so, with a way out
+    $("#view").innerHTML = `<div class="todo" style="margin-top:18px"><div class="what"><b>Could not load</b><span>${esc(message)}</span></div><button class="b" data-act="refresh">Try again</button></div>`;
+}
+// A fault in the page must never leave a silent blank screen.
+window.addEventListener("error", e => toast("Something went wrong on this page: " + (e.message || "unknown error"), true));
+window.addEventListener("unhandledrejection", e => toast("Something went wrong on this page: " + ((e.reason && e.reason.message) || e.reason || "unknown error"), true));
 
 const live = p => p.state === "published" && !p.submission_id && !p.window_missed;
 const groups = () => ({
@@ -615,7 +626,7 @@ const ACTIONS = {
     await db.from("jobs").update({state: "cancelled"}).eq("kind", "review").eq("state", "queued").contains("payload", {clip: d.clip});
     toast("Skipped"); await load();
   },
-  refresh() { load().then(() => toast("Up to date")); },
+  refresh() { load().then(() => { if (S.agents.length) toast("Up to date"); }); },
   async signOut() { await db.auth.signOut(); location.reload(); },
   async revise(d) { const note = prompt("What needs to change?"); if (note) await call(db.rpc("review_post", {p_slug: d.slug, p_decision: "revise", p_note: note}), "Sent back"); },
   async saveCaption(d) { const text = $(`[data-caption="${CSS.escape(d.clip)}"]`).value; await call(db.from("clips").update({caption: text}).eq("short_id", d.clip), "Caption saved"); },
